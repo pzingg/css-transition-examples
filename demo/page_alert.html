@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../favicon.ico">
+
+    <title>Narrow Jumbotron Template for Bootstrap</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="bootstrap-dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="jumbotron-narrow.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="alert.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+      <div id="root"></div>
+      <script src="./elm.js"></script>
+      <script>var app = Elm.AlertMain.embed(document.getElementById('root'));</script>
+      <script>
+
+      // port openAlert : String -> Cmd Msg
+      app.ports.openAlert.subscribe(function(domId) {
+          var wrapper = document.getElementById(domId);
+
+          if (wrapper == null) {
+              console.log('alert ' + domId + ' not found');
+              return;
+          }
+
+          var detailsWrapper = document.getElementById(domId + '-details');
+          var detailsHeight = 0;
+          if (detailsWrapper) {
+              detailsWrapper.classList.remove('open');
+              detailsHeight = detailsWrapper.clientHeight;
+              detailsWrapper.style.height = 0 + 'px';
+          }
+
+          smoothScrollToTop();
+
+          var content = wrapper.querySelector('.content')
+          if (!content) {
+              console.log('alert ' + domId + ' does not contain a .content element');
+              return;
+          }
+
+          wrapper.style.height = (content.clientHeight - detailsHeight + 10) + 'px';
+      });
+
+      // port closeAlert : String -> Cmd Msg
+      app.ports.closeAlert.subscribe(function(domId) {
+          var wrapper = document.getElementById(domId);
+          if (wrapper == null) {
+              console.log('alert ' + domId + ' not found');
+              return;
+          }
+
+          wrapper.style.height = 0;
+      });
+
+      // port toggleAlertDetails : String -> Cmd Msg
+      app.ports.toggleAlertDetails.subscribe(function(domId) {
+          var alertWrapper = document.getElementById(domId);
+          if (alertWrapper == null) {
+              console.log('alert ' + domId + ' not found');
+              return;
+          }
+
+          var detailsWrapper = document.getElementById(domId + '-details');
+          if (detailsWrapper == null) {
+              console.log('alert ' + domId + '-details not found');
+              return;
+          }
+
+          var outerHeight = 0, innerHeight = 0, padding = 20;
+          if (alertWrapper && detailsWrapper) {
+
+              var innerContent = detailsWrapper.querySelector('.content')
+              var outerContent = alertWrapper.querySelector('.content')
+              if (!innerContent || !outerContent) {
+                  console.log('alert or details do not contain a .content element');
+                  return;
+              }
+
+              if (detailsWrapper.classList.contains('open')) {
+                  detailsWrapper.classList.remove('open');
+                  innerHeight = 0;
+                  outerHeight = outerContent.clientHeight - innerContent.clientHeight + padding;
+              } else {
+                  detailsWrapper.classList.add('open');
+                  innerHeight = innerContent.clientHeight;
+                  outerHeight = outerContent.clientHeight + innerHeight + padding;
+              }
+
+              detailsWrapper.style.height = innerHeight + 'px';
+              alertWrapper.style.height = outerHeight + 'px'
+          }
+      });
+
+      // smooth scrolling
+      function currentYPosition() {
+          // Firefox, Chrome, Opera, Safari
+          if (self.pageYOffset) return self.pageYOffset;
+          // Internet Explorer 6 - standards mode
+          if (document.documentElement && document.documentElement.scrollTop)
+              return document.documentElement.scrollTop;
+          // Internet Explorer 6, 7 and 8
+          if (document.body.scrollTop) return document.body.scrollTop;
+          return 0;
+      }
+
+      function smoothScrollToTop() {
+          var startY = currentYPosition();
+          var stopY = 0;
+
+          var distance = startY - stopY;
+          if (distance < 100) {
+              scrollTo(0, stopY); return;
+          }
+
+          var speed = Math.round(distance / 100);
+          if (speed >= 10) speed = 10;
+
+          var step = Math.round(distance / 25);
+          var leapY = startY - step;
+
+          var timer = 0;
+          if (stopY > startY) {
+              for (var i = startY; i < stopY; i += step) {
+                  setTimeout('window.scrollTo(0, ' + leapY + ')', timer * speed);
+                  leapY += step; if (leapY > stopY) leapY = stopY; timer++;
+              } return;
+          }
+
+          for (var i = startY; i > stopY; i -=  step) {
+              setTimeout('window.scrollTo(0, ' + leapY + ')', timer * speed);
+              leapY -= step; if (leapY < stopY) leapY = stopY; timer++;
+          }
+        return false;
+      }
+      </script>
+  </body>
+</html>

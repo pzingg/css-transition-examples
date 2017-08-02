@@ -1,0 +1,12 @@
+
+.info-box-wrapper {
+    background: #ccc;
+    overflow: hidden;
+    transition: height 500ms;
+    height: 0; /* always start info boxes closed */
+}
+
+.help-icon {
+    margin-left: 5px;
+    color: #337ab7;
+}
