@@ -2,7 +2,7 @@
 .info-box-wrapper {
     background: #ccc;
     overflow: hidden;
-    transition: height 500ms;
+    transition: height 1000ms;
     height: 0; /* always start info boxes closed */
 }
 

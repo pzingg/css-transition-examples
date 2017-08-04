@@ -5,6 +5,8 @@ module Alert
         , Config
         , State
         , init
+        , open
+        , opened
         , close
         , detailsClicked
         , view
@@ -30,9 +32,12 @@ See https://github.com/debois/elm-dom/tree/master for rationale.
 -}
 
 import Dict exposing (Dict)
+import DOM
 import Html exposing (Html, node, text, div, span, label, button)
-import Html.Attributes exposing (attribute, id, class, type_, style)
-import Html.Events exposing (onClick, onWithOptions)
+import Html.Attributes exposing (attribute, id, class, classList, type_, style)
+import Html.Events exposing (onClick, on)
+import Json.Decode as Json exposing (Decoder, field)
+import Ports exposing (openAlert)
 
 
 -- TYPES
@@ -56,6 +61,7 @@ type alias Config msg =
     , dismssal : Dismissal
     , summary : String
     , details : Maybe String
+    , openTagger : String -> Float -> Float -> State -> msg
     , closeTagger : String -> State -> msg
     , detailsTagger : Maybe (String -> State -> msg)
     }
@@ -63,9 +69,11 @@ type alias Config msg =
 
 type Visibility
     = Hidden
+    | Opening
     | Summary
     | Details
-    | Closing
+    | SummaryClosing
+    | DetailsClosing
 
 
 type alias Properties =
@@ -92,36 +100,85 @@ init =
 -- UPDATE
 
 
-getAlertState : String -> State -> Properties
-getAlertState domId (State alertProps) =
-    Dict.get domId alertProps
-        |> Maybe.withDefault
-            { visibility = Hidden
-            , summaryHeight = Nothing
-            , detailsHeight = Nothing
+open : String -> State -> ( State, Cmd msg )
+open domId state =
+    ( mapProperties domId
+        (\props ->
+            { props
+                | visibility = Opening
+                , summaryHeight = Nothing
+                , detailsHeight = Nothing
             }
+        )
+        state
+    , openAlert domId
+    )
+
+
+opened : String -> Float -> Float -> State -> State
+opened domId sHeight dHeight state =
+    mapProperties domId
+        (\props ->
+            { props
+                | visibility = Summary
+                , summaryHeight = Just sHeight
+                , detailsHeight = Just dHeight
+            }
+        )
+        state
+
+
+close : String -> State -> State
+close domId state =
+    mapProperties domId
+        (\props -> case props.visibility of
+            Details ->
+                { props | visibility = DetailsClosing }
+
+            Summary ->
+                { props | visibility = SummaryClosing }
+
+            _ ->
+                props
+        )
+        state
+
+
+detailsClicked : String -> State -> State
+detailsClicked domId state =
+    mapProperties domId
+        (\props ->
+            case props.visibility of
+                Summary ->
+                    { props | visibility = Details }
+
+                Details ->
+                    { props | visibility = Summary }
+
+                _ ->
+                    props
+        )
+        state
 
 
 mapProperties : String -> (Properties -> Properties) -> State -> State
 mapProperties domId mapperFn ((State alertProps) as state) =
     let
         updateProperties =
-            getAlertState domId state
+            getAlertProperties domId state
                 |> mapperFn
     in
         State (Dict.insert domId updateProperties alertProps)
 
 
-close : String -> State -> State
-close domId state =
-    mapProperties domId
-        (\props -> { props | summaryHeight = Just 0 } )
-        state
-
-
-detailsClicked : String -> State -> State
-detailsClicked domId state =
-    state
+getAlertProperties : String -> State -> Properties
+getAlertProperties domId (State state) =
+    Dict.get domId state
+        |> Maybe.withDefault
+            { visibility = Hidden
+            , summaryHeight = Nothing
+            , detailsHeight = Nothing
+            }
 
 
 
@@ -130,44 +187,23 @@ detailsClicked domId state =
 
 view : Config msg -> State -> Html msg
 view config state =
-    div
-        [ id config.domId
-        , class alertWrapperClass
-        ]
-        [ viewContent config state ]
+    let
+        decoder =
+            openHandler config.domId state config.openTagger
 
+        props =
+            getAlertProperties config.domId state
 
-emptyHtml : Html msg
-emptyHtml =
-    text ""
-
-
-detailsButton : String -> Maybe (String -> State -> msg) -> State -> Html msg
-detailsButton domId detailsTagger state =
-    case detailsTagger of
-        Nothing ->
-            emptyHtml
-
-        Just tagger ->
-            button
-                [ class smallLinkButtonClass, onClick (tagger domId state) ]
-                [ text "details" ]
-
-
-detailsContent : String -> Maybe String -> Html msg
-detailsContent domId details =
-    case details of
-        Nothing ->
-            emptyHtml
-
-        Just str ->
-            div [ id (domId ++ "-details"), class "alert-details" ]
-                [ div [ class "content" ]
-                    [ div []
-                        [ label [] [ text "details:" ] ]
-                    , text str
-                    ]
-                ]
+        styles =
+            Debug.log "wrapperStyles" <| wrapperStylesFor props
+    in
+        div
+            [ id config.domId
+            , class alertWrapperClass
+            , style styles
+            , on "alertOpen" decoder
+            ]
+            [ viewContent config state ]
 
 
 viewContent : Config msg -> State -> Html msg
@@ -194,8 +230,156 @@ viewContent { domId, severity, dismssal, summary, details, closeTagger, detailsT
                 ]
             , text summary
             , detailsButton domId detailsTagger state
-            , detailsContent domId details
+            , detailsContent domId details state
             ]
+
+
+detailsButton : String -> Maybe (String -> State -> msg) -> State -> Html msg
+detailsButton domId detailsTagger state =
+    case detailsTagger of
+        Nothing ->
+            emptyHtml
+
+        Just tagger ->
+            button
+                [ class smallLinkButtonClass, onClick (tagger domId state) ]
+                [ text "details" ]
+
+
+detailsContent : String -> Maybe String -> State -> Html msg
+detailsContent domId details state =
+    case details of
+        Nothing ->
+            emptyHtml
+
+        Just str ->
+            let
+                props =
+                    getAlertProperties domId state
+
+                styles =
+                    Debug.log "detailsStyles" <| detailsStylesFor props
+            in
+                div
+                    [ id (domId ++ "-details")
+                    , classList
+                        [ ( "alert-details", True )
+                        , ( "open", detailsOpenFor props )
+                        ]
+                    , style styles
+                    ]
+                    [ div [ class "content" ]
+                        [ div []
+                            [ label [] [ text "details:" ] ]
+                        , text str
+                        ]
+                    ]
+
+
+wrapperStylesFor : Properties -> List ( String, String )
+wrapperStylesFor { visibility, summaryHeight, detailsHeight } =
+    case visibility of
+        Summary ->
+            let
+                sHeight =
+                    summaryHeight |> Maybe.withDefault 0
+            in
+                [ ( "height", toString (sHeight + 10) ++ "px" ) ]
+
+        Details ->
+            let
+                sHeight =
+                    summaryHeight |> Maybe.withDefault 0
+
+                dHeight =
+                    detailsHeight |> Maybe.withDefault 0
+            in
+                [ ( "height", toString (sHeight + dHeight + 20) ++ "px" ) ]
+
+        SummaryClosing ->
+            [ ( "height", "0px" ) ]
+
+        DetailsClosing ->
+            [ ( "height", "0px" ) ]
+
+        _ ->
+            []
+
+
+detailsOpenFor : Properties -> Bool
+detailsOpenFor { visibility } =
+    case visibility of
+        Details ->
+            True
+
+        DetailsClosing ->
+            True
+
+        _ ->
+            False
+
+
+detailsStylesFor : Properties -> List ( String, String )
+detailsStylesFor { visibility, detailsHeight } =
+    case visibility of
+        Details ->
+            let
+                dHeight =
+                    detailsHeight |> Maybe.withDefault 0
+            in
+                [ ( "height", toString (dHeight + 10) ++ "px" ) ]
+
+        _ ->
+            [ ( "height", "0px" ) ]
+
+
+emptyHtml : Html msg
+emptyHtml =
+    text ""
+
+
+{-| Get the lastChild of an element.
+-}
+lastChild : Decoder a -> Decoder a
+lastChild decoder =
+    field "lastChild" decoder
+
+
+{-|
+<div id="alert-info" class="alert-wrapper" style="height: 0px;">
+    <div class="alert alert-danger alert-dismissable error col-xs-12 content" role="alert">
+        <button role="button" data-dismiss="alert" aria-label="Close" type="button" class="close">
+            <span aria-hidden="true">×</span>
+        </button>
+        Invalid definition or meta-parameters (invalid parameter values).
+        <button class="btn btn-link btn-sm">details</button>
+        <div id="alert-info-details" class="alert-details" style="height: 0px;" class="">
+            <div class="content">
+                <div><label>details:</label></div>
+                Only 1 valid value(s) for parameter Quench (at least 2 are required).
+            </div>
+        </div>
+    </div>
+</div>
+
+-}
+wrapperHeightDecoder : Decoder Float
+wrapperHeightDecoder =
+    Json.at [ "target", "firstChild", "offsetHeight" ] Json.float
+
+
+detailsHeightDecoder : Decoder Float
+detailsHeightDecoder =
+    Json.at [ "target", "firstChild", "lastChild", "firstChild", "offsetHeight" ] Json.float
+
+
+openHandler : String -> State -> (String -> Float -> Float -> State -> msg) -> Decoder msg
+openHandler domId state tagger =
+    Json.map2 (,) wrapperHeightDecoder detailsHeightDecoder
+        |> Json.andThen
+            (\( sHeight, dHeight ) ->
+                Json.succeed <| tagger domId sHeight dHeight state
+            )
 
 
 getContentClassNames : Severity -> String

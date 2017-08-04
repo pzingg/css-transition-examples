@@ -4,7 +4,6 @@ import Html exposing (Html, program, text, div, h1, h2, h3, h4, a, p, nav, ul, l
 import Html.Attributes exposing (attribute, class, href)
 import Html.Events exposing (onClick)
 import Alert exposing (..)
-import Ports exposing (..)
 
 
 -- MODEL
@@ -22,8 +21,8 @@ type alias Model =
 type Msg
     = NoOp
     | OpenAlert String
-    | CloseAlert String
-    | AlertCloseClicked String Alert.State
+    | AlertOpened String Float Float Alert.State
+    | CloseAlert String Alert.State
     | AlertDetailsClicked String Alert.State
 
 
@@ -46,14 +45,18 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        OpenAlert str ->
-            ( model, openAlert str )
+        OpenAlert domId ->
+            let
+                ( nextState, cmd ) =
+                    Alert.open domId model.alerts
+            in
+                ( { model | alerts = nextState }, cmd )
 
-        CloseAlert str ->
-            ( model, closeAlert str )
+        AlertOpened domId sHeight dHeight state ->
+            ( { model | alerts = Alert.opened domId sHeight dHeight state }, Cmd.none )
 
-        AlertCloseClicked domId state ->
-            ( { model | alerts = Alert.closeClicked domId state }, Cmd.none )
+        CloseAlert domId state ->
+            ( { model | alerts = Alert.close domId state }, Cmd.none )
 
         AlertDetailsClicked domId state ->
             ( { model | alerts = Alert.detailsClicked domId state }, Cmd.none )
@@ -70,7 +73,8 @@ infoAlertConfig =
     , dismssal = DismissAfter 5
     , summary = "You just clicked something. Hurray!"
     , details = Just "And you expanded the details content. Double hurray!"
-    , closeTagger = AlertCloseClicked
+    , openTagger = AlertOpened
+    , closeTagger = CloseAlert
     , detailsTagger = Just AlertDetailsClicked
     }
 

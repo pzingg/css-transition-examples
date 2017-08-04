@@ -29,10 +29,28 @@
   <body>
       <div id="root"></div>
       <script src="./elm.js"></script>
-      <script>var app = Elm.AlertMain.embed(document.getElementById('root'));</script>
       <script>
+      // Embed and ports
+      var app = Elm.AlertMain.embed(document.getElementById('root'));
 
-      // port openAlert : String -> Cmd Msg
+      function fireOpen(domId) {
+          var wrapper = document.getElementById(domId);
+          if (wrapper == null) {
+              console.log('alert ' + domId + ' not found');
+          } else {
+              console.log('firing alertOpen for ' + domId);
+              var event = new CustomEvent('alertOpen',
+                { 'bubbles': true, 'cancelable': false });
+              wrapper.dispatchEvent(event);
+          }
+      }
+
+      app.ports.openAlert.subscribe(function(domId) {
+          var boundFunction = fireOpen.bind(null, domId);
+          window.requestAnimationFrame(boundFunction);
+      });
+
+      /* port openAlert : String -> Cmd Msg
       app.ports.openAlert.subscribe(function(domId) {
           var wrapper = document.getElementById(domId);
 
@@ -59,8 +77,9 @@
 
           wrapper.style.height = (content.clientHeight - detailsHeight + 10) + 'px';
       });
+      */
 
-      // port closeAlert : String -> Cmd Msg
+      /* port closeAlert : String -> Cmd Msg
       app.ports.closeAlert.subscribe(function(domId) {
           var wrapper = document.getElementById(domId);
           if (wrapper == null) {
@@ -70,8 +89,9 @@
 
           wrapper.style.height = 0;
       });
+      */
 
-      // port toggleAlertDetails : String -> Cmd Msg
+      /* port toggleAlertDetails : String -> Cmd Msg
       app.ports.toggleAlertDetails.subscribe(function(domId) {
           var alertWrapper = document.getElementById(domId);
           if (alertWrapper == null) {
@@ -109,6 +129,7 @@
               alertWrapper.style.height = outerHeight + 'px'
           }
       });
+      */
 
       // smooth scrolling
       function currentYPosition() {
