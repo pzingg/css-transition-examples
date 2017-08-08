@@ -8,7 +8,7 @@ import Alert exposing (..)
 
 -- MODEL
 
-
+{-}
 type alias Model =
     { alerts : Alert.State
     }
@@ -21,9 +21,7 @@ type alias Model =
 type Msg
     = NoOp
     | OpenAlert String
-    | AlertOpened String Float Float Alert.State
-    | CloseAlert String Alert.State
-    | AlertDetailsClicked String Alert.State
+    | AlertMsg Alert.Msg
 
 
 
@@ -47,35 +45,26 @@ update msg model =
 
         OpenAlert domId ->
             let
-                ( nextState, cmd ) =
+                ( nextState, alertCmd ) =
                     Alert.open domId model.alerts
             in
-                ( { model | alerts = nextState }, cmd )
+                ( { model | alerts = nextState }, alertCmd )
 
-        AlertOpened domId sHeight dHeight state ->
-            ( { model | alerts = Alert.opened domId sHeight dHeight state }, Cmd.none )
-
-        CloseAlert domId state ->
-            ( { model | alerts = Alert.close domId state }, Cmd.none )
-
-        AlertDetailsClicked domId state ->
-            ( { model | alerts = Alert.detailsClicked domId state }, Cmd.none )
+        AlertMsg subMsg ->
+            ( { model | alerts = Alert.update subMsg model.alerts }, Cmd.none )
 
 
 
 -- VIEW
 
 
-infoAlertConfig : Alert.Config Msg
+infoAlertConfig : Alert.Config
 infoAlertConfig =
     { domId = "alert-info"
     , severity = Info
     , dismssal = DismissAfter 5
     , summary = "You just clicked something. Hurray!"
     , details = Just "And you expanded the details content. Double hurray!"
-    , openTagger = AlertOpened
-    , closeTagger = CloseAlert
-    , detailsTagger = Just AlertDetailsClicked
     }
 
 
@@ -103,6 +92,7 @@ view model =
                 [ text "CSS Transitions in Elm" ]
             ]
         , Alert.view infoAlertConfig model.alerts
+            |> Html.map AlertMsg
         , div [ class "jumbotron" ]
             [ h2 []
                 [ text "Alert Example" ]

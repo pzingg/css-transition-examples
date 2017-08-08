@@ -19,7 +19,7 @@ type alias Model =
 
 type Msg
     = NoOp
-    | InfoBoxClicked String Float InfoBox.State
+    | InfoBoxMsg InfoBox.Msg
 
 
 
@@ -41,22 +41,21 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        InfoBoxClicked domId height state ->
-            ( { model | infoBoxes = InfoBox.iconClicked domId height state }, Cmd.none )
+        InfoBoxMsg subMsg ->
+            ( { model | infoBoxes = InfoBox.update subMsg model.infoBoxes }, Cmd.none )
 
 
 
 -- VIEW
 
 
-ibExampleConfig : InfoBox.Config Msg
+ibExampleConfig : InfoBox.Config
 ibExampleConfig =
     { domId = "ib-example"
     , tagName = "h3"
     , htext = "Click here to get more information"
     , content =
         div [] [ text "Cras justo odio, dapibus ac facilisis in, egestas eget quam. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus." ]
-    , tagger = InfoBoxClicked
     }
 
 
@@ -96,6 +95,7 @@ view model =
         , div [ class "row marketing" ]
             [ div [ class "col-lg-12" ]
                 [ InfoBox.view ibExampleConfig model.infoBoxes
+                    |> Html.map InfoBoxMsg
                 , p []
                     [ text "Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum." ]
                 ]

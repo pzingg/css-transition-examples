@@ -1,21 +1,27 @@
-module InfoBox exposing (Config, State, init, iconClicked, view)
+module InfoBox exposing (Config, State, Msg, init, update, view)
 
-{-| This library fills a bunch of important niches in Elm. A `Maybe` can help
-you with optional arguments, error handling, and records with optional fields.
+{-| This module encapsulates the behavior of an Elm "InfoBox" component.
+An InfoBox consists of an HTML header line ("h2", "h3", etc), with a (?)
+icon that when clicked, expands with animation to reveal a Bootstrap "well"
+containing information for the user.
 
-Implemetation lifted from rundis/elm-bootstrap package (Accordion module),
-which in turn uses debois/elm-dom library.
+# Configuration
+@docs Config
 
-See https://github.com/debois/elm-dom/tree/master for rationale.
+# Initialization
+@docs init
 
-# Definition
-@docs Maybe
+# Commands
+@docs open
 
-# Common Helpers
-@docs map, withDefault, oneOf
+# Update
+@docs update
 
-# Chaining Maybes
-@docs andThen
+# View
+@docs view
+
+# Helpers
+@docs getContentClassNames
 
 -}
 
@@ -24,19 +30,32 @@ import DOM
 import Html exposing (Html, node, text, div, i)
 import Html.Attributes exposing (id, class, style)
 import Html.Events exposing (onWithOptions)
-import Json.Decode as Json
+import Json.Decode as Json exposing (Decoder, field)
 
 
--- TYPES
+-- CONFIGURATION
 
 
-type alias Config msg =
+{-| Configuration record for fully specifying an info box.
+
+* `domId` must be a valid DOM id string, applied to an info box's header
+element; the id string must be unique for each info box used in the parent's model
+* `tagName` should be a "header" tag element type, such as "h2", "h3", "h4";
+the tag type will be appled to the header text.
+* `htext` is the (required) string for the header text
+* `content` is the Elm HTML content that is initially hidden but displayed
+when the user clicks the (?) icon in the header.
+-}
+type alias Config =
     { domId : String
     , tagName : String
     , htext : String
-    , content : Html msg
-    , tagger : String -> Float -> State -> msg
+    , content : Html Msg
     }
+
+
+
+-- PRIVATE PROPERTIES
 
 
 type Visibility
@@ -50,6 +69,10 @@ type alias Properties =
     }
 
 
+{-| Opaque type encapsulating the state of all info boxes in the parent's model.
+The global state is kept in an Elm Dict keyed on the DOM ids of the info box
+headers.
+-}
 type State
     = State (Dict String Properties)
 
@@ -58,6 +81,8 @@ type State
 -- INIT
 
 
+{-| Initialize the state of all info boxes in the model with an empty Dict.
+-}
 init : State
 init =
     State Dict.empty
@@ -67,16 +92,26 @@ init =
 -- UPDATE
 
 
-iconClicked : String -> Float -> State -> State
-iconClicked domId height state =
-    mapProperties domId
-        (\props ->
-            { props
-                | height = Just height
-                , visibility = toggleVisibility props.visibility
-            }
-        )
-        state
+{-| Opaque type that handles all internal messages.
+-}
+type Msg
+    = IconClicked String Float State
+
+
+{-| Update function. No Cmds are returned.
+-}
+update : Msg -> State -> State
+update msg state =
+    case msg of
+        IconClicked domId height state ->
+            mapProperties domId
+                (\props ->
+                    { props
+                        | height = Just height
+                        , visibility = toggleVisibility props.visibility
+                    }
+                )
+                state
 
 
 mapProperties : String -> (Properties -> Properties) -> State -> State
@@ -112,8 +147,12 @@ getProperties domId (State boxProps) =
 -- VIEW
 
 
-view : Config msg -> State -> Html msg
-view { tagName, domId, tagger, htext, content } state =
+{-| Render the info box, based on the configuration and the current state.
+A click on the icon contained in the header diapatches a click event to
+the iconClickHander function.
+-}
+view : Config -> State -> Html Msg
+view { domId, tagName, htext, content } state =
     let
         { visibility, height } =
             getProperties domId state
@@ -137,7 +176,7 @@ view { tagName, domId, tagger, htext, content } state =
                     [ class "glyphicon glyphicon-question-sign help-icon"
                     , onWithOptions "click"
                         { stopPropagation = False, preventDefault = True }
-                        (iconClickHandler domId state tagger)
+                        (iconClickHandler domId state)
                     ]
                     []
                 ]
@@ -152,13 +191,19 @@ view { tagName, domId, tagger, htext, content } state =
             ]
 
 
-iconClickHandler : String -> State -> (String -> Float -> State -> msg) -> Json.Decoder msg
-iconClickHandler domId state tagger =
+iconClickHandler : String -> State -> Decoder Msg
+iconClickHandler domId state =
     wellHeightDecoder
-        |> Json.andThen (\height -> Json.succeed (tagger domId height state))
+        |> Json.andThen (\height -> Json.succeed <| IconClicked domId height state)
 
 
-wellHeightDecoder : Json.Decoder Float
+{-| Decode the height of the content element, which is the first
+child of the info box's wrapper element. The wrapper element is the
+next sibling of the parent of the icon that dispatched the click event.
+
+Using the DOM libary, you could also write this as:
+
+```elm
 wellHeightDecoder =
     -- i (the click handler target)
     DOM.target
@@ -171,3 +216,8 @@ wellHeightDecoder =
                 )
             )
         )
+```
+-}
+wellHeightDecoder : Decoder Float
+wellHeightDecoder =
+    Json.at [ "target", "parentElement", "nextSibling", "firstChild", "offsetHeight" ] Json.float

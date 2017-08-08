@@ -1,70 +1,92 @@
-module Alert
+port module Alert
     exposing
         ( Severity(..)
         , Dismissal(..)
         , Config
         , State
+        , Msg
         , init
         , open
-        , opened
-        , close
-        , detailsClicked
+        , update
+        , openAlert
         , view
         )
 
-{-| This library fills a bunch of important niches in Elm. A `Maybe` can help
-you with optional arguments, error handling, and records with optional fields.
+{-| This module encapsulates the behavior of an Elm "Alert" component, based on
+the Bootstrap JavaScript/CSS "Alert" component. These "Alert" widgets feature
+animated opening and closing and can present two levels of text information to
+the user--a summary level with a basic message and a details level that the
+user can choose to expand if available.
 
-Implemetation lifted from rundis/elm-bootstrap package (Accordion module),
-which in turn uses debois/elm-dom library.
+# Configuration
+@docs Severity Dismissal Config
 
-See https://github.com/debois/elm-dom/tree/master for rationale.
+# Initialization
+@docs init
 
-# Definition
-@docs Maybe
+# Commands
+@docs open
 
-# Common Helpers
-@docs map, withDefault, oneOf
+# Update
+@docs update
 
-# Chaining Maybes
-@docs andThen
+# View
+@docs view
+
+# Helpers
+@docs getContentClassNames
 
 -}
 
 import Dict exposing (Dict)
-import DOM
 import Html exposing (Html, node, text, div, span, label, button)
 import Html.Attributes exposing (attribute, id, class, classList, type_, style)
 import Html.Events exposing (onClick, on)
 import Json.Decode as Json exposing (Decoder, field)
-import Ports exposing (openAlert)
 
 
--- TYPES
+-- CONFIGURATION TYPES
 
 
+{-| Configuration union type describing the appearance of the alert
+(maps to Bootstrap alert styles).
+-}
 type Severity
     = Error
     | Info
     | Success
 
 
+{-| Configuration union type describing when the alert should be dismissed:
+after a specified number of seconds, after a page change in an SPA, or
+only manually (when a user clicks the close [x] button).
+-}
 type Dismissal
     = DismissAfter Float
     | DismissOnPageChange
     | DismissOnUserAction
 
 
-type alias Config msg =
+{-| Configuration record for fully specifying an alert.
+
+* `domId` must be a valid DOM id string, applied to an alert's wrapper element;
+the id string must be unique for each alert used in the parent's model
+* `summary` is the (required) string to be shown at the summary level of the
+alert
+* `details` is the (optional) string to be shown when the user clicks the
+"details" link to expand the alert
+-}
+type alias Config =
     { domId : String
     , severity : Severity
     , dismssal : Dismissal
     , summary : String
     , details : Maybe String
-    , openTagger : String -> Float -> Float -> State -> msg
-    , closeTagger : String -> State -> msg
-    , detailsTagger : Maybe (String -> State -> msg)
     }
+
+
+
+-- PRIVATE PROPERTY TYPES
 
 
 type Visibility
@@ -83,6 +105,10 @@ type alias Properties =
     }
 
 
+{-| Opaque type encapsulating the state of all alerts in the parent's model.
+The global state is kept in an Elm Dict keyed on the DOM ids of the alert
+wrappers.
+-}
 type State
     = State (Dict String Properties)
 
@@ -91,13 +117,15 @@ type State
 -- INIT
 
 
+{-| Initialize the state of all alerts in the model with an empty Dict.
+-}
 init : State
 init =
     State Dict.empty
 
 
 
--- UPDATE
+-- COMMANDS
 
 
 open : String -> State -> ( State, Cmd msg )
@@ -115,8 +143,35 @@ open domId state =
     )
 
 
-opened : String -> Float -> Float -> State -> State
-opened domId sHeight dHeight state =
+
+-- UPDATE
+
+
+{-| Opaque type that handles all internal messages.
+-}
+type Msg
+    = Resized String Float Float State
+    | DetailsClicked String State
+    | CloseClicked String State
+
+
+{-| Update function. No Cmds are returned.
+-}
+update : Msg -> State -> State
+update msg state =
+    case msg of
+        Resized domId sHeight dHeight state ->
+            resized domId sHeight dHeight state
+
+        DetailsClicked domId state ->
+            detailsClicked domId state
+
+        CloseClicked domId state ->
+            closeClicked domId state
+
+
+resized : String -> Float -> Float -> State -> State
+resized domId sHeight dHeight state =
     mapProperties domId
         (\props ->
             { props
@@ -124,22 +179,6 @@ opened domId sHeight dHeight state =
                 , summaryHeight = Just sHeight
                 , detailsHeight = Just dHeight
             }
-        )
-        state
-
-
-close : String -> State -> State
-close domId state =
-    mapProperties domId
-        (\props -> case props.visibility of
-            Details ->
-                { props | visibility = DetailsClosing }
-
-            Summary ->
-                { props | visibility = SummaryClosing }
-
-            _ ->
-                props
         )
         state
 
@@ -154,6 +193,23 @@ detailsClicked domId state =
 
                 Details ->
                     { props | visibility = Summary }
+
+                _ ->
+                    props
+        )
+        state
+
+
+closeClicked : String -> State -> State
+closeClicked domId state =
+    mapProperties domId
+        (\props ->
+            case props.visibility of
+                Details ->
+                    { props | visibility = DetailsClosing }
+
+                Summary ->
+                    { props | visibility = SummaryClosing }
 
                 _ ->
                     props
@@ -182,32 +238,39 @@ getAlertProperties domId (State state) =
 
 
 
+-- PORTS
+
+
+port openAlert : String -> Cmd msg
+
+
+
 -- VIEW
 
 
-view : Config msg -> State -> Html msg
+{-| Render the alert, based on the configuration and the current state.
+Handles the "alertSizes" event sent via the `openAlert` port.
+-}
+view : Config -> State -> Html Msg
 view config state =
     let
         decoder =
-            openHandler config.domId state config.openTagger
+            resizeHandler config.domId state
 
         props =
             getAlertProperties config.domId state
-
-        styles =
-            Debug.log "wrapperStyles" <| wrapperStylesFor props
     in
         div
             [ id config.domId
             , class alertWrapperClass
-            , style styles
-            , on "alertOpen" decoder
+            , style <| wrapperStylesFor props
+            , on "alertSizes" decoder
             ]
             [ viewContent config state ]
 
 
-viewContent : Config msg -> State -> Html msg
-viewContent { domId, severity, dismssal, summary, details, closeTagger, detailsTagger } state =
+viewContent : Config -> State -> Html Msg
+viewContent { domId, severity, dismssal, summary, details } state =
     if String.isEmpty summary then
         emptyHtml
     else
@@ -221,7 +284,7 @@ viewContent { domId, severity, dismssal, summary, details, closeTagger, detailsT
                 , class "close"
                 , attribute "data-dismiss" "alert"
                 , attribute "aria-label" "Close"
-                , onClick (closeTagger domId state)
+                , onClick (CloseClicked domId state)
                 ]
                 [ span
                     [ attribute "aria-hidden" "true" ]
@@ -229,24 +292,19 @@ viewContent { domId, severity, dismssal, summary, details, closeTagger, detailsT
                     [ text "×" ]
                 ]
             , text summary
-            , detailsButton domId detailsTagger state
+            , detailsButton domId state
             , detailsContent domId details state
             ]
 
 
-detailsButton : String -> Maybe (String -> State -> msg) -> State -> Html msg
-detailsButton domId detailsTagger state =
-    case detailsTagger of
-        Nothing ->
-            emptyHtml
-
-        Just tagger ->
-            button
-                [ class smallLinkButtonClass, onClick (tagger domId state) ]
-                [ text "details" ]
+detailsButton : String -> State -> Html Msg
+detailsButton domId state =
+    button
+        [ class smallLinkButtonClass, onClick (DetailsClicked domId state) ]
+        [ text "details" ]
 
 
-detailsContent : String -> Maybe String -> State -> Html msg
+detailsContent : String -> Maybe String -> State -> Html Msg
 detailsContent domId details state =
     case details of
         Nothing ->
@@ -256,9 +314,6 @@ detailsContent domId details state =
             let
                 props =
                     getAlertProperties domId state
-
-                styles =
-                    Debug.log "detailsStyles" <| detailsStylesFor props
             in
                 div
                     [ id (domId ++ "-details")
@@ -266,7 +321,7 @@ detailsContent domId details state =
                         [ ( "alert-details", True )
                         , ( "open", detailsOpenFor props )
                         ]
-                    , style styles
+                    , style <| detailsStylesFor props
                     ]
                     [ div [ class "content" ]
                         [ div []
@@ -333,55 +388,47 @@ detailsStylesFor { visibility, detailsHeight } =
             [ ( "height", "0px" ) ]
 
 
-emptyHtml : Html msg
-emptyHtml =
-    text ""
-
-
-{-| Get the lastChild of an element.
--}
-lastChild : Decoder a -> Decoder a
-lastChild decoder =
-    field "lastChild" decoder
-
-
-{-|
-<div id="alert-info" class="alert-wrapper" style="height: 0px;">
-    <div class="alert alert-danger alert-dismissable error col-xs-12 content" role="alert">
-        <button role="button" data-dismiss="alert" aria-label="Close" type="button" class="close">
-            <span aria-hidden="true">×</span>
-        </button>
-        Invalid definition or meta-parameters (invalid parameter values).
-        <button class="btn btn-link btn-sm">details</button>
-        <div id="alert-info-details" class="alert-details" style="height: 0px;" class="">
-            <div class="content">
-                <div><label>details:</label></div>
-                Only 1 valid value(s) for parameter Quench (at least 2 are required).
-            </div>
-        </div>
-    </div>
-</div>
-
+{-| Decode the height of the summary content element, which is the first
+child of the wrapper element that dispatched the "alertSizes" event.
 -}
 wrapperHeightDecoder : Decoder Float
 wrapperHeightDecoder =
     Json.at [ "target", "firstChild", "offsetHeight" ] Json.float
 
 
+{-| Decode the height of the details content element, which is the first
+child of the last child of the summary content element, which is in turn,
+he first child of the wrapper element that dispatched the "alertSizes" event.
+-}
 detailsHeightDecoder : Decoder Float
 detailsHeightDecoder =
     Json.at [ "target", "firstChild", "lastChild", "firstChild", "offsetHeight" ] Json.float
 
 
-openHandler : String -> State -> (String -> Float -> Float -> State -> msg) -> Decoder msg
-openHandler domId state tagger =
+{-| When the "alertSizes" event is received, call this function to combine
+the results of the two content element height decoders and package the results
+into a "Resized" Alert.Msg value.
+-}
+resizeHandler : String -> State -> Decoder Msg
+resizeHandler domId state =
     Json.map2 (,) wrapperHeightDecoder detailsHeightDecoder
         |> Json.andThen
             (\( sHeight, dHeight ) ->
-                Json.succeed <| tagger domId sHeight dHeight state
+                Json.succeed <| Resized domId sHeight dHeight state
             )
 
 
+
+-- HELPER FUNCTIONS AND CONSTANTS
+
+
+emptyHtml : Html msg
+emptyHtml =
+    text ""
+
+
+{-| Get the DOM class names for different types of alerts.
+-}
 getContentClassNames : Severity -> String
 getContentClassNames severity =
     case severity of
