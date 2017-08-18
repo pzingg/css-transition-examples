@@ -131,7 +131,7 @@ init =
 {-| Opaque type that handles all internal messages.
 -}
 type Msg
-    = IconClicked String Float State
+    = IconClicked String Float
     | TransitionEnd String
 
 
@@ -140,7 +140,7 @@ type Msg
 update : Msg -> State -> ( State, Maybe OutMsg )
 update msg state =
     case msg of
-        IconClicked domId height state ->
+        IconClicked domId height ->
             let
                 ( props, nextState ) =
                     mapProperties domId
@@ -224,7 +224,7 @@ view { domId, tagName, htext, content } state =
                     [ class "glyphicon glyphicon-question-sign help-icon"
                     , onWithOptions "click"
                         { stopPropagation = False, preventDefault = True }
-                        (iconClickHandler domId state)
+                        (iconClickHandler domId)
                     ]
                     []
                 ]
@@ -242,10 +242,10 @@ view { domId, tagName, htext, content } state =
             ]
 
 
-iconClickHandler : String -> State -> Decoder Msg
-iconClickHandler domId state =
+iconClickHandler : String -> Decoder Msg
+iconClickHandler domId =
     wellHeightDecoder
-        |> Json.andThen (\height -> Json.succeed <| IconClicked domId height state)
+        |> Json.andThen (\height -> Json.succeed <| IconClicked domId height)
 
 
 {-| Decode the height of the content element, which is the first

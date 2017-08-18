@@ -3,6 +3,7 @@ module AlertMain exposing (main)
 import Html exposing (Html, program, text, div, h1, h2, h3, h4, a, p, nav, ul, li)
 import Html.Attributes exposing (attribute, class, style, href)
 import Html.Events exposing (onClick)
+import Time
 import Alert exposing (..)
 
 
@@ -51,7 +52,7 @@ update msg model =
                     exampleAlert i
 
                 ( nextState, alertCmd ) =
-                    Alert.open config.domId model.alerts
+                    Alert.open config model.alerts
             in
                 ( { model | alerts = nextState, index = i }, alertCmd )
 
@@ -67,7 +68,7 @@ update msg model =
 
         AlertMsg subMsg ->
             let
-                ( nextState, maybeMsg ) =
+                ( nextState, subCmd, maybeMsg ) =
                     Alert.update subMsg model.alerts
 
                 nextModel =
@@ -75,15 +76,17 @@ update msg model =
             in
                 case maybeMsg of
                     Nothing ->
-                        ( nextModel, Cmd.none )
+                        ( nextModel, Cmd.map AlertMsg subCmd )
 
-                    -- Alert.TranstionStarted or Alert.TransitionEnded messages
+                    -- Alert.TranstionStarted
+                    -- Alert.TransitionEnded
+                    -- Alert.DismissalTimeout
                     Just outMsg ->
                         let
                             _ =
                                 Debug.log "OutMsg" outMsg
                         in
-                            ( nextModel, Cmd.none )
+                            ( nextModel, Cmd.map AlertMsg subCmd )
 
 
 
@@ -96,15 +99,15 @@ exampleAlert i =
         1 ->
             { domId = "alert-error"
             , severity = Error
-            , dismssal = DismissAfter 5
-            , summary = "OMG. Something bad happened."
+            , dismissal = DismissOnUserAction
+            , summary = "OMG. Something bad happened. You'll have to close this alert yourself."
             , details = Just "And you expanded the details content."
             }
 
         2 ->
             { domId = "alert-success"
             , severity = Success
-            , dismssal = DismissAfter 5
+            , dismissal = DismissAfter (5 * Time.second)
             , summary = "A button was clicked again."
             , details = Just "And you expanded the details content."
             }
@@ -112,7 +115,7 @@ exampleAlert i =
         3 ->
             { domId = "alert-success"
             , severity = Success
-            , dismssal = DismissAfter 5
+            , dismissal = DismissAfter (5 * Time.second)
             , summary = "Changed the summary text."
             , details = Just "And you expanded the details content."
             }
@@ -120,7 +123,7 @@ exampleAlert i =
         _ ->
             { domId = "alert-info"
             , severity = Info
-            , dismssal = DismissAfter 5
+            , dismissal = DismissAfter (5 * Time.second)
             , summary = "You just clicked something. Hurray!"
             , details = Just "And you expanded the details content. Double hurray!"
             }

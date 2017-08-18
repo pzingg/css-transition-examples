@@ -58,6 +58,9 @@ import Html exposing (Html, node, text, div, span, label, button)
 import Html.Attributes exposing (attribute, id, class, classList, type_, style)
 import Html.Events exposing (onClick, on, onWithOptions)
 import Json.Decode as Json exposing (Decoder, field)
+import Process
+import Task
+import Time exposing (Time)
 
 
 -- CONFIGURATION TYPES
@@ -95,7 +98,7 @@ type Dismissal
 type alias Config =
     { domId : String
     , severity : Severity
-    , dismssal : Dismissal
+    , dismissal : Dismissal
     , summary : String
     , details : Maybe String
     }
@@ -113,6 +116,7 @@ type Visibility
 type OutMsg
     = TransitionStarted String Visibility
     | TransitionEnded String Visibility
+    | DismissalTimeout String
 
 
 
@@ -120,9 +124,17 @@ type OutMsg
 
 
 type alias Properties =
-    { visibility : Visibility
+    { instanceId : Int
+    , dismissal : Dismissal
+    , visibility : Visibility
     , summaryHeight : Maybe Float
     , detailsHeight : Maybe Float
+    }
+
+
+type alias PrivateState =
+    { currentId : Int
+    , bag : Dict String Properties
     }
 
 
@@ -131,7 +143,7 @@ The global state is kept in an Elm Dict keyed on the DOM ids of the alert
 wrappers.
 -}
 type State
-    = State (Dict String Properties)
+    = State PrivateState
 
 
 
@@ -142,26 +154,31 @@ type State
 -}
 init : State
 init =
-    State Dict.empty
+    State { currentId = 0, bag = Dict.empty }
 
 
 
 -- COMMANDS
 
 
-open : String -> State -> ( State, Cmd msg )
-open domId state =
+open : Config -> State -> ( State, Cmd msg )
+open { domId, dismissal } ((State priv) as state) =
     let
-        ( _, nextState ) =
+        instanceId =
+            priv.currentId + 1
+
+        ( nextState, _ ) =
             mapProperties domId
                 (\props ->
                     { props
-                        | visibility = Opening
+                        | instanceId = instanceId
+                        , dismissal = dismissal
+                        , visibility = Opening
                         , summaryHeight = Nothing
                         , detailsHeight = Nothing
                     }
                 )
-                state
+                (State { priv | currentId = instanceId })
     in
         ( nextState, openAlert domId )
 
@@ -169,7 +186,7 @@ open domId state =
 dismiss : String -> State -> ( State, Cmd msg )
 dismiss domId state =
     let
-        ( _, nextState ) =
+        ( nextState, _ ) =
             closeClicked domId state
     in
         ( nextState, Cmd.none )
@@ -182,50 +199,75 @@ dismiss domId state =
 {-| Opaque type that handles all internal messages.
 -}
 type Msg
-    = Resized String Float Float State
-    | DetailsClicked String State
-    | CloseClicked String State
+    = Resized String Dismissal Float Float
+    | DetailsClicked String
+    | CloseClicked String
     | TransitionEnd String String
+    | DismissalTimer String Int
 
 
-{-| Update function. No Cmds are returned.
+{-| Update function.
 -}
-update : Msg -> State -> ( State, Maybe OutMsg )
+update : Msg -> State -> ( State, Cmd Msg, Maybe OutMsg )
 update msg state =
     case msg of
-        Resized domId sHeight dHeight state ->
+        Resized domId dismissal sHeight dHeight ->
             let
-                ( props, nextState ) =
+                instanceId =
+                    getProperties domId state
+                        |> .instanceId
+
+                dismissalCmd =
+                    case dismissal of
+                        DismissAfter time ->
+                            delay time (DismissalTimer domId instanceId)
+
+                        _ ->
+                            Cmd.none
+
+                ( nextState, props ) =
                     resized domId sHeight dHeight state
             in
-                ( nextState, Just <| TransitionStarted domId props.visibility )
+                ( nextState, dismissalCmd, Just <| TransitionStarted domId props.visibility )
 
-        DetailsClicked domId state ->
+        DetailsClicked domId ->
             let
-                ( props, nextState ) =
+                ( nextState, props ) =
                     detailsClicked domId state
             in
-                ( nextState, Just <| TransitionStarted domId props.visibility )
+                ( nextState, Cmd.none, Just <| TransitionStarted domId props.visibility )
 
-        CloseClicked domId state ->
+        CloseClicked domId ->
             let
-                ( props, nextState ) =
+                ( nextState, props ) =
                     closeClicked domId state
             in
-                ( nextState, Just <| TransitionStarted domId props.visibility )
+                ( nextState, Cmd.none, Just <| TransitionStarted domId props.visibility )
 
         TransitionEnd domId componentId ->
             let
-                ( props, nextState ) =
+                ( nextState, props ) =
                     transitionEnd domId state
             in
-                ( nextState, Just <| TransitionEnded componentId props.visibility )
+                ( nextState, Cmd.none, Just <| TransitionEnded componentId props.visibility )
+
+        DismissalTimer domId instanceId ->
+            let
+                ( nextState, wasDismissed ) =
+                    dismissalTimer domId instanceId state
+            in
+                case wasDismissed of
+                    True ->
+                        ( nextState, Cmd.none, Just <| DismissalTimeout domId )
+
+                    False ->
+                        ( nextState, Cmd.none, Nothing )
 
 
-resized : String -> Float -> Float -> State -> ( Properties, State )
+resized : String -> Float -> Float -> State -> ( State, Properties )
 resized domId sHeight dHeight state =
     let
-        ( props, nextState ) =
+        ( nextState, props ) =
             mapProperties domId
                 (\props ->
                     case props.visibility of
@@ -244,13 +286,13 @@ resized domId sHeight dHeight state =
                 )
                 state
     in
-        ( props, nextState )
+        ( nextState, props )
 
 
-detailsClicked : String -> State -> ( Properties, State )
+detailsClicked : String -> State -> ( State, Properties )
 detailsClicked domId state =
     let
-        ( props, nextState ) =
+        ( nextState, props ) =
             mapProperties domId
                 (\props ->
                     case props.visibility of
@@ -265,13 +307,13 @@ detailsClicked domId state =
                 )
                 state
     in
-        ( props, nextState )
+        ( nextState, props )
 
 
-closeClicked : String -> State -> ( Properties, State )
+closeClicked : String -> State -> ( State, Properties )
 closeClicked domId state =
     let
-        ( props, nextState ) =
+        ( nextState, props ) =
             mapProperties domId
                 (\props ->
                     case props.visibility of
@@ -286,13 +328,13 @@ closeClicked domId state =
                 )
                 state
     in
-        ( props, nextState )
+        ( nextState, props )
 
 
-transitionEnd : String -> State -> ( Properties, State )
+transitionEnd : String -> State -> ( State, Properties )
 transitionEnd domId state =
     let
-        ( props, nextState ) =
+        ( nextState, props ) =
             mapProperties domId
                 (\props ->
                     case props.visibility of
@@ -307,24 +349,52 @@ transitionEnd domId state =
                 )
                 state
     in
-        ( props, nextState )
+        ( nextState, props )
 
 
-mapProperties : String -> (Properties -> Properties) -> State -> ( Properties, State )
-mapProperties domId mapperFn ((State props) as state) =
+dismissalTimer : String -> Int -> State -> ( State, Bool )
+dismissalTimer domId instanceId ((State priv) as state) =
+    let
+        props =
+            getProperties domId state
+
+        ( nextProperties, wasDismissed ) =
+            case ( props.instanceId == instanceId, props.visibility ) of
+                ( True, Details ) ->
+                    ( { props | visibility = DetailsClosing }, True )
+
+                ( True, Summary ) ->
+                    ( { props | visibility = SummaryClosing }, True )
+
+                _ ->
+                    ( props, False )
+
+        nextPriv =
+            { priv | bag = Dict.insert domId nextProperties priv.bag }
+    in
+        ( State nextPriv, wasDismissed )
+
+
+mapProperties : String -> (Properties -> Properties) -> State -> ( State, Properties )
+mapProperties domId mapperFn ((State priv) as state) =
     let
         nextProperties =
             getProperties domId state
                 |> mapperFn
+
+        nextPriv =
+            { priv | bag = Dict.insert domId nextProperties priv.bag }
     in
-        ( nextProperties, State (Dict.insert domId nextProperties props) )
+        ( State nextPriv, nextProperties )
 
 
 getProperties : String -> State -> Properties
 getProperties domId (State state) =
-    Dict.get domId state
+    Dict.get domId state.bag
         |> Maybe.withDefault
-            { visibility = Hidden
+            { instanceId = state.currentId
+            , dismissal = DismissOnUserAction
+            , visibility = Hidden
             , summaryHeight = Nothing
             , detailsHeight = Nothing
             }
@@ -351,7 +421,7 @@ view config state =
             config.domId
 
         decoder =
-            resizeHandler domId state
+            resizeHandler domId config.dismissal
 
         props =
             getProperties domId state
@@ -369,7 +439,7 @@ view config state =
 
 
 viewContent : Config -> State -> Html Msg
-viewContent { domId, severity, dismssal, summary, details } state =
+viewContent { domId, severity, dismissal, summary, details } state =
     if String.isEmpty summary then
         emptyHtml
     else
@@ -383,7 +453,7 @@ viewContent { domId, severity, dismssal, summary, details } state =
                 , class "close"
                 , attribute "data-dismiss" "alert"
                 , attribute "aria-label" "Close"
-                , onClick (CloseClicked domId state)
+                , onClick (CloseClicked domId)
                 ]
                 [ span
                     [ attribute "aria-hidden" "true" ]
@@ -399,7 +469,7 @@ viewContent { domId, severity, dismssal, summary, details } state =
 detailsButton : String -> State -> Html Msg
 detailsButton domId state =
     button
-        [ class smallLinkButtonClass, onClick (DetailsClicked domId state) ]
+        [ class smallLinkButtonClass, onClick (DetailsClicked domId) ]
         [ text "details" ]
 
 
@@ -523,17 +593,26 @@ detailsHeightDecoder =
 the results of the two content element height decoders and package the results
 into a "Resized" Alert.Msg value.
 -}
-resizeHandler : String -> State -> Decoder Msg
-resizeHandler domId state =
+resizeHandler : String -> Dismissal -> Decoder Msg
+resizeHandler domId dismissal =
     Json.map2 (,) wrapperHeightDecoder detailsHeightDecoder
         |> Json.andThen
             (\( sHeight, dHeight ) ->
-                Json.succeed <| Resized domId sHeight dHeight state
+                Json.succeed <| Resized domId dismissal sHeight dHeight
             )
 
 
 
 -- HELPER FUNCTIONS AND CONSTANTS
+
+
+{-| Send a message some time in the future.
+-}
+delay : Time -> msg -> Cmd msg
+delay time msg =
+    Process.sleep time
+        |> Task.andThen (always <| Task.succeed msg)
+        |> Task.perform identity
 
 
 emptyHtml : Html msg
