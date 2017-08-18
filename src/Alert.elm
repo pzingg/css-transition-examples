@@ -175,7 +175,7 @@ type Msg
     = Resized String Float Float State
     | DetailsClicked String State
     | CloseClicked String State
-    | TransitionEnd String
+    | TransitionEnd String String
 
 
 {-| Update function. No Cmds are returned.
@@ -204,12 +204,12 @@ update msg state =
             in
                 ( nextState, Just <| TransitionStarted domId props.visibility )
 
-        TransitionEnd domId ->
+        TransitionEnd domId componentId ->
             let
-                props =
-                    getProperties domId state
+                ( props, nextState ) =
+                    transitionEnd domId state
             in
-                ( state, Just <| TransitionEnded domId props.visibility )
+                ( nextState, Just <| TransitionEnded componentId props.visibility )
 
 
 resized : String -> Float -> Float -> State -> ( Properties, State )
@@ -218,11 +218,19 @@ resized domId sHeight dHeight state =
         ( props, nextState ) =
             mapProperties domId
                 (\props ->
-                    { props
-                        | visibility = Summary
-                        , summaryHeight = Just sHeight
-                        , detailsHeight = Just dHeight
-                    }
+                    case props.visibility of
+                        Opening ->
+                            { props
+                                | visibility = Summary
+                                , summaryHeight = Just sHeight
+                                , detailsHeight = Just dHeight
+                            }
+
+                        _ ->
+                            { props
+                                | summaryHeight = Just sHeight
+                                , detailsHeight = Just dHeight
+                            }
                 )
                 state
     in
@@ -271,6 +279,27 @@ closeClicked domId state =
         ( props, nextState )
 
 
+transitionEnd : String -> State -> ( Properties, State )
+transitionEnd domId state =
+    let
+        ( props, nextState ) =
+            mapProperties domId
+                (\props ->
+                    case props.visibility of
+                        DetailsClosing ->
+                            { props | visibility = Hidden }
+
+                        SummaryClosing ->
+                            { props | visibility = Hidden }
+
+                        _ ->
+                            props
+                )
+                state
+    in
+        ( props, nextState )
+
+
 mapProperties : String -> (Properties -> Properties) -> State -> ( Properties, State )
 mapProperties domId mapperFn ((State props) as state) =
     let
@@ -308,11 +337,14 @@ Handles the "alertSizes" event sent via the `openAlert` port.
 view : Config -> State -> Html Msg
 view config state =
     let
+        domId =
+            config.domId
+
         decoder =
-            resizeHandler config.domId state
+            resizeHandler domId state
 
         props =
-            getProperties config.domId state
+            getProperties domId state
     in
         div
             [ id config.domId
@@ -320,8 +352,8 @@ view config state =
             , style <| wrapperStylesFor props
             , on "alertSizes" decoder
             , onWithOptions "transitionend"
-                { stopPropagation = False, preventDefault = True }
-                (Json.succeed <| TransitionEnd config.domId)
+                { stopPropagation = True, preventDefault = True }
+                (Json.succeed <| TransitionEnd domId domId)
             ]
             [ viewContent config state ]
 
@@ -379,10 +411,9 @@ detailsContent domId details state =
                         , ( "open", detailsOpenFor props )
                         ]
                     , style <| detailsStylesFor props
-
-                    -- , onWithOptions "transitionend"
-                    -- { stopPropagation = False, preventDefault = True }
-                    -- (Json.succeed <| TransitionEnd domId)
+                    , onWithOptions "transitionend"
+                        { stopPropagation = True, preventDefault = True }
+                        (Json.succeed <| TransitionEnd domId (domId ++ "-details"))
                     ]
                     [ div [ class "content" ]
                         [ div []
