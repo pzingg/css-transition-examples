@@ -332,24 +332,31 @@ closeClicked domId state =
 
 
 transitionEnd : String -> State -> ( State, Properties )
-transitionEnd domId state =
+transitionEnd domId ((State priv) as state) =
     let
-        ( nextState, props ) =
-            mapProperties domId
-                (\props ->
-                    case props.visibility of
-                        DetailsClosing ->
-                            { props | visibility = Hidden }
+        props =
+            getProperties domId state
 
-                        SummaryClosing ->
-                            { props | visibility = Hidden }
+        nextProperties =
+            case props.visibility of
+                DetailsClosing ->
+                    { props | visibility = Hidden }
 
-                        _ ->
-                            props
-                )
-                state
+                SummaryClosing ->
+                    { props | visibility = Hidden }
+
+                _ ->
+                    props
+
+        nextPriv =
+            case nextProperties.visibility of
+                Hidden ->
+                    { priv | bag = Dict.remove domId priv.bag }
+
+                _ ->
+                    { priv | bag = Dict.insert domId nextProperties priv.bag }
     in
-        ( nextState, props )
+        ( State nextPriv, nextProperties )
 
 
 dismissalTimer : String -> Int -> State -> ( State, Bool )

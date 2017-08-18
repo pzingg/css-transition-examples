@@ -97,7 +97,7 @@ exampleAlert : Int -> Alert.Config
 exampleAlert i =
     case i % 4 of
         1 ->
-            { domId = "alert-error"
+            { domId = "my-alert"
             , severity = Error
             , dismissal = DismissOnUserAction
             , summary = "OMG. Something bad happened. You'll have to close this alert yourself."
@@ -105,7 +105,7 @@ exampleAlert i =
             }
 
         2 ->
-            { domId = "alert-success"
+            { domId = "my-alert"
             , severity = Success
             , dismissal = DismissAfter (5 * Time.second)
             , summary = "A button was clicked again."
@@ -113,7 +113,7 @@ exampleAlert i =
             }
 
         3 ->
-            { domId = "alert-success"
+            { domId = "my-alert"
             , severity = Success
             , dismissal = DismissAfter (5 * Time.second)
             , summary = "Changed the summary text."
@@ -121,7 +121,7 @@ exampleAlert i =
             }
 
         _ ->
-            { domId = "alert-info"
+            { domId = "my-alert"
             , severity = Info
             , dismissal = DismissAfter (5 * Time.second)
             , summary = "You just clicked something. Hurray!"
