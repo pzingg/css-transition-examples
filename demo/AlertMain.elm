@@ -92,7 +92,7 @@ update msg model =
 
 exampleAlert : Int -> Alert.Config
 exampleAlert i =
-    case i % 3 of
+    case i % 4 of
         1 ->
             { domId = "alert-error"
             , severity = Error
@@ -106,6 +106,14 @@ exampleAlert i =
             , severity = Success
             , dismssal = DismissAfter 5
             , summary = "A button was clicked again."
+            , details = Just "And you expanded the details content."
+            }
+
+        3 ->
+            { domId = "alert-success"
+            , severity = Success
+            , dismssal = DismissAfter 5
+            , summary = "Changed the summary text."
             , details = Just "And you expanded the details content."
             }
 
