@@ -9,6 +9,7 @@ port module Alert
         , Msg
         , init
         , open
+        , dismiss
         , update
         , openAlert
         , view
@@ -163,6 +164,15 @@ open domId state =
                 state
     in
         ( nextState, openAlert domId )
+
+
+dismiss : String -> State -> ( State, Cmd msg )
+dismiss domId state =
+    let
+        ( _, nextState ) =
+            closeClicked domId state
+    in
+        ( nextState, Cmd.none )
 
 
 

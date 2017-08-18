@@ -1,7 +1,7 @@
 module AlertMain exposing (main)
 
 import Html exposing (Html, program, text, div, h1, h2, h3, h4, a, p, nav, ul, li)
-import Html.Attributes exposing (attribute, class, href)
+import Html.Attributes exposing (attribute, class, style, href)
 import Html.Events exposing (onClick)
 import Alert exposing (..)
 
@@ -11,6 +11,7 @@ import Alert exposing (..)
 
 type alias Model =
     { alerts : Alert.State
+    , index : Int
     }
 
 
@@ -20,7 +21,8 @@ type alias Model =
 
 type Msg
     = NoOp
-    | OpenAlert String
+    | ShowAlert Int
+    | DismissAlert Int
     | AlertMsg Alert.Msg
 
 
@@ -30,7 +32,7 @@ type Msg
 
 init : ( Model, Cmd Msg )
 init =
-    ( { alerts = Alert.init }, Cmd.none )
+    ( { alerts = Alert.init, index = 0 }, Cmd.none )
 
 
 
@@ -43,12 +45,25 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        OpenAlert domId ->
+        ShowAlert i ->
             let
+                config =
+                    exampleAlert i
+
                 ( nextState, alertCmd ) =
-                    Alert.open domId model.alerts
+                    Alert.open config.domId model.alerts
             in
-                ( { model | alerts = nextState }, alertCmd )
+                ( { model | alerts = nextState, index = i }, alertCmd )
+
+        DismissAlert i ->
+            let
+                config =
+                    exampleAlert i
+
+                ( nextState, alertCmd ) =
+                    Alert.dismiss config.domId model.alerts
+            in
+                ( { model | alerts = nextState, index = i }, alertCmd )
 
         AlertMsg subMsg ->
             let
@@ -75,14 +90,32 @@ update msg model =
 -- VIEW
 
 
-infoAlertConfig : Alert.Config
-infoAlertConfig =
-    { domId = "alert-info"
-    , severity = Info
-    , dismssal = DismissAfter 5
-    , summary = "You just clicked something. Hurray!"
-    , details = Just "And you expanded the details content. Double hurray!"
-    }
+exampleAlert : Int -> Alert.Config
+exampleAlert i =
+    case i % 3 of
+        1 ->
+            { domId = "alert-error"
+            , severity = Error
+            , dismssal = DismissAfter 5
+            , summary = "OMG. Something bad happened."
+            , details = Just "And you expanded the details content."
+            }
+
+        2 ->
+            { domId = "alert-success"
+            , severity = Success
+            , dismssal = DismissAfter 5
+            , summary = "A button was clicked again."
+            , details = Just "And you expanded the details content."
+            }
+
+        _ ->
+            { domId = "alert-info"
+            , severity = Info
+            , dismssal = DismissAfter 5
+            , summary = "You just clicked something. Hurray!"
+            , details = Just "And you expanded the details content. Double hurray!"
+            }
 
 
 view : Model -> Html Msg
@@ -108,7 +141,7 @@ view model =
             , h3 [ class "text-muted" ]
                 [ text "CSS Transitions in Elm" ]
             ]
-        , Alert.view infoAlertConfig model.alerts
+        , Alert.view (exampleAlert model.index) model.alerts
             |> Html.map AlertMsg
         , div [ class "jumbotron" ]
             [ h2 []
@@ -120,9 +153,17 @@ view model =
                     [ class "btn btn-lg btn-success"
                     , href "#"
                     , attribute "role" "button"
-                    , onClick (OpenAlert infoAlertConfig.domId)
+                    , onClick <| ShowAlert (model.index + 1)
                     ]
-                    [ text "Click me" ]
+                    [ text "Next Alert" ]
+                , a
+                    [ class "btn btn-lg btn-info"
+                    , style [ ( "margin-left", "10px" ) ]
+                    , href "#"
+                    , attribute "role" "button"
+                    , onClick <| DismissAlert model.index
+                    ]
+                    [ text "Dismiss Alert" ]
                 ]
             ]
         , div [ class "row marketing" ]
