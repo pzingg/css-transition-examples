@@ -29,127 +29,85 @@
   <body>
       <div id="root"></div>
       <script src="./elm.js"></script>
-      <script>var app = Elm.AlertMain.embed(document.getElementById('root'));</script>
       <script>
+      // Embed Elm app and define ports
+      var app = Elm.AlertMain.embed(document.getElementById('root'));
 
-      // port openAlert : String -> Cmd Msg
+      // port openAlert : String -> Cmd msg
       app.ports.openAlert.subscribe(function(domId) {
-          var wrapper = document.getElementById(domId);
-
-          if (wrapper == null) {
-              console.log('alert ' + domId + ' not found');
-              return;
-          }
-
-          var detailsWrapper = document.getElementById(domId + '-details');
-          var detailsHeight = 0;
-          if (detailsWrapper) {
-              detailsWrapper.classList.remove('open');
-              detailsHeight = detailsWrapper.clientHeight;
-              detailsWrapper.style.height = 0 + 'px';
-          }
-
-          smoothScrollToTop();
-
-          var content = wrapper.querySelector('.content')
-          if (!content) {
-              console.log('alert ' + domId + ' does not contain a .content element');
-              return;
-          }
-
-          wrapper.style.height = (content.clientHeight - detailsHeight + 10) + 'px';
+          var boundFunction = dispatchAlertSizes.bind(null, domId);
+          window.requestAnimationFrame(boundFunction);
       });
 
-      // port closeAlert : String -> Cmd Msg
-      app.ports.closeAlert.subscribe(function(domId) {
+      // Dispatch a DOM custom event for Elm to handle
+      function dispatchAlertSizes(domId) {
           var wrapper = document.getElementById(domId);
           if (wrapper == null) {
               console.log('alert ' + domId + ' not found');
-              return;
+          } else {
+              console.log('firing alertSizes for ' + domId);
+              var event = new CustomEvent('alertSizes',
+                { 'bubbles': true, 'cancelable': false });
+              wrapper.dispatchEvent(event);
           }
-
-          wrapper.style.height = 0;
-      });
-
-      // port toggleAlertDetails : String -> Cmd Msg
-      app.ports.toggleAlertDetails.subscribe(function(domId) {
-          var alertWrapper = document.getElementById(domId);
-          if (alertWrapper == null) {
-              console.log('alert ' + domId + ' not found');
-              return;
-          }
-
-          var detailsWrapper = document.getElementById(domId + '-details');
-          if (detailsWrapper == null) {
-              console.log('alert ' + domId + '-details not found');
-              return;
-          }
-
-          var outerHeight = 0, innerHeight = 0, padding = 20;
-          if (alertWrapper && detailsWrapper) {
-
-              var innerContent = detailsWrapper.querySelector('.content')
-              var outerContent = alertWrapper.querySelector('.content')
-              if (!innerContent || !outerContent) {
-                  console.log('alert or details do not contain a .content element');
-                  return;
-              }
-
-              if (detailsWrapper.classList.contains('open')) {
-                  detailsWrapper.classList.remove('open');
-                  innerHeight = 0;
-                  outerHeight = outerContent.clientHeight - innerContent.clientHeight + padding;
-              } else {
-                  detailsWrapper.classList.add('open');
-                  innerHeight = innerContent.clientHeight;
-                  outerHeight = outerContent.clientHeight + innerHeight + padding;
-              }
-
-              detailsWrapper.style.height = innerHeight + 'px';
-              alertWrapper.style.height = outerHeight + 'px'
-          }
-      });
-
-      // smooth scrolling
-      function currentYPosition() {
-          // Firefox, Chrome, Opera, Safari
-          if (self.pageYOffset) return self.pageYOffset;
-          // Internet Explorer 6 - standards mode
-          if (document.documentElement && document.documentElement.scrollTop)
-              return document.documentElement.scrollTop;
-          // Internet Explorer 6, 7 and 8
-          if (document.body.scrollTop) return document.body.scrollTop;
-          return 0;
       }
 
+      // Smooth scrolling to top of page
       function smoothScrollToTop() {
-          var startY = currentYPosition();
-          var stopY = 0;
+          return smoothScroll(scrollTop_(), 0);
+      }
 
-          var distance = startY - stopY;
+      // Smooth scrolling
+      function smoothScroll(startY, stopY) {
+          var distance = Math.abs(startY - stopY);
           if (distance < 100) {
-              scrollTo(0, stopY); return;
+              scrollTo(0, stopY);
+              return false;
           }
 
           var speed = Math.round(distance / 100);
-          if (speed >= 10) speed = 10;
+          if (speed >= 10)
+              speed = 10;
 
           var step = Math.round(distance / 25);
-          var leapY = startY - step;
-
+          var leapY = startY;
           var timer = 0;
+
           if (stopY > startY) {
               for (var i = startY; i < stopY; i += step) {
+                  leapY += step;
+                  if (leapY > stopY)
+                      leapY = stopY;
                   setTimeout('window.scrollTo(0, ' + leapY + ')', timer * speed);
-                  leapY += step; if (leapY > stopY) leapY = stopY; timer++;
-              } return;
+                  timer++;
+              }
+          } else {
+              for (var i = startY; i > stopY; i -= step) {
+                  leapY -= step;
+                  if (leapY < stopY)
+                      leapY = stopY;
+                  setTimeout('window.scrollTo(0, ' + leapY + ')', timer * speed);
+                  timer++;
+              }
           }
+          return false;
+      }
 
-          for (var i = startY; i > stopY; i -=  step) {
-              setTimeout('window.scrollTo(0, ' + leapY + ')', timer * speed);
-              leapY -= step; if (leapY < stopY) leapY = stopY; timer++;
-          }
-        return false;
+      // Portable version to get current scrollTop value
+      function scrollTop_() {
+          // Firefox, Chrome, Opera, Safari
+          if (self.pageYOffset)
+              return self.pageYOffset;
+
+          // Internet Explorer 6 - standards mode
+          if (document.documentElement && document.documentElement.scrollTop)
+              return document.documentElement.scrollTop;
+
+          // Internet Explorer 6, 7 and 8
+          if (document.body.scrollTop)
+              return document.body.scrollTop;
+
+          return 0;
       }
       </script>
   </body>

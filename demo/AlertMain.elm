@@ -1,10 +1,10 @@
 module AlertMain exposing (main)
 
 import Html exposing (Html, program, text, div, h1, h2, h3, h4, a, p, nav, ul, li)
-import Html.Attributes exposing (attribute, class, href)
+import Html.Attributes exposing (attribute, class, style, href)
 import Html.Events exposing (onClick)
+import Time
 import Alert exposing (..)
-import Ports exposing (..)
 
 
 -- MODEL
@@ -12,6 +12,7 @@ import Ports exposing (..)
 
 type alias Model =
     { alerts : Alert.State
+    , index : Int
     }
 
 
@@ -21,10 +22,9 @@ type alias Model =
 
 type Msg
     = NoOp
-    | OpenAlert String
-    | CloseAlert String
-    | AlertCloseClicked String Alert.State
-    | AlertDetailsClicked String Alert.State
+    | ShowAlert Int
+    | DismissAlert Int
+    | AlertMsg Alert.Msg
 
 
 
@@ -33,7 +33,7 @@ type Msg
 
 init : ( Model, Cmd Msg )
 init =
-    ( { alerts = Alert.init }, Cmd.none )
+    ( { alerts = Alert.init, index = 0 }, Cmd.none )
 
 
 
@@ -46,33 +46,87 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        OpenAlert str ->
-            ( model, openAlert str )
+        ShowAlert i ->
+            let
+                config =
+                    exampleAlert i
 
-        CloseAlert str ->
-            ( model, closeAlert str )
+                ( nextState, alertCmd ) =
+                    Alert.open config model.alerts
+            in
+                ( { model | alerts = nextState, index = i }, alertCmd )
 
-        AlertCloseClicked domId state ->
-            ( { model | alerts = Alert.closeClicked domId state }, Cmd.none )
+        DismissAlert i ->
+            let
+                config =
+                    exampleAlert i
 
-        AlertDetailsClicked domId state ->
-            ( { model | alerts = Alert.detailsClicked domId state }, Cmd.none )
+                ( nextState, alertCmd ) =
+                    Alert.dismiss config.domId model.alerts
+            in
+                ( { model | alerts = nextState, index = i }, alertCmd )
+
+        AlertMsg subMsg ->
+            let
+                ( nextState, subCmd, maybeMsg ) =
+                    Alert.update subMsg model.alerts
+
+                nextModel =
+                    { model | alerts = nextState }
+            in
+                case maybeMsg of
+                    Nothing ->
+                        ( nextModel, Cmd.map AlertMsg subCmd )
+
+                    -- Alert.TranstionStarted
+                    -- Alert.TransitionEnded
+                    -- Alert.DismissalTimeout
+                    Just outMsg ->
+                        let
+                            _ =
+                                Debug.log "OutMsg" outMsg
+                        in
+                            ( nextModel, Cmd.map AlertMsg subCmd )
 
 
 
 -- VIEW
 
 
-infoAlertConfig : Alert.Config Msg
-infoAlertConfig =
-    { domId = "alert-info"
-    , severity = Info
-    , dismssal = DismissAfter 5
-    , summary = "You just clicked something. Hurray!"
-    , details = Just "And you expanded the details content. Double hurray!"
-    , closeTagger = AlertCloseClicked
-    , detailsTagger = Just AlertDetailsClicked
-    }
+exampleAlert : Int -> Alert.Config
+exampleAlert i =
+    case i % 4 of
+        1 ->
+            { domId = "my-alert"
+            , severity = Error
+            , dismissal = DismissOnUserAction
+            , summary = "OMG. Something bad happened. You'll have to close this alert yourself."
+            , details = Just "And you expanded the details content."
+            }
+
+        2 ->
+            { domId = "my-alert"
+            , severity = Success
+            , dismissal = DismissAfter (5 * Time.second)
+            , summary = "A button was clicked again."
+            , details = Just "And you expanded the details content."
+            }
+
+        3 ->
+            { domId = "my-alert"
+            , severity = Success
+            , dismissal = DismissAfter (5 * Time.second)
+            , summary = "Changed the summary text."
+            , details = Just "And you expanded the details content."
+            }
+
+        _ ->
+            { domId = "my-alert"
+            , severity = Info
+            , dismissal = DismissAfter (5 * Time.second)
+            , summary = "You just clicked something. Hurray!"
+            , details = Just "And you expanded the details content. Double hurray!"
+            }
 
 
 view : Model -> Html Msg
@@ -98,7 +152,8 @@ view model =
             , h3 [ class "text-muted" ]
                 [ text "CSS Transitions in Elm" ]
             ]
-        , Alert.view infoAlertConfig model.alerts
+        , Alert.view (exampleAlert model.index) model.alerts
+            |> Html.map AlertMsg
         , div [ class "jumbotron" ]
             [ h2 []
                 [ text "Alert Example" ]
@@ -109,9 +164,17 @@ view model =
                     [ class "btn btn-lg btn-success"
                     , href "#"
                     , attribute "role" "button"
-                    , onClick (OpenAlert infoAlertConfig.domId)
+                    , onClick <| ShowAlert (model.index + 1)
                     ]
-                    [ text "Click me" ]
+                    [ text "Next Alert" ]
+                , a
+                    [ class "btn btn-lg btn-info"
+                    , style [ ( "margin-left", "10px" ) ]
+                    , href "#"
+                    , attribute "role" "button"
+                    , onClick <| DismissAlert model.index
+                    ]
+                    [ text "Dismiss Alert" ]
                 ]
             ]
         , div [ class "row marketing" ]

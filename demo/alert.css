@@ -1,7 +1,7 @@
 
 .alert-wrapper, .alert-details {
     overflow: hidden;
-    transition: height 100ms;
+    transition: height 1000ms;
     height: 0px;
 }
 
