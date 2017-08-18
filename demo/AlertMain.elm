@@ -51,7 +51,24 @@ update msg model =
                 ( { model | alerts = nextState }, alertCmd )
 
         AlertMsg subMsg ->
-            ( { model | alerts = Alert.update subMsg model.alerts }, Cmd.none )
+            let
+                ( nextState, maybeMsg ) =
+                    Alert.update subMsg model.alerts
+
+                nextModel =
+                    { model | alerts = nextState }
+            in
+                case maybeMsg of
+                    Nothing ->
+                        ( nextModel, Cmd.none )
+
+                    -- Alert.TranstionStarted or Alert.TransitionEnded messages
+                    Just outMsg ->
+                        let
+                            _ =
+                                Debug.log "OutMsg" outMsg
+                        in
+                            ( nextModel, Cmd.none )
 
 
 

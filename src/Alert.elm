@@ -2,6 +2,8 @@ port module Alert
     exposing
         ( Severity(..)
         , Dismissal(..)
+        , Visibility(..)
+        , OutMsg(..)
         , Config
         , State
         , Msg
@@ -53,7 +55,7 @@ user can choose to expand if available.
 import Dict exposing (Dict)
 import Html exposing (Html, node, text, div, span, label, button)
 import Html.Attributes exposing (attribute, id, class, classList, type_, style)
-import Html.Events exposing (onClick, on)
+import Html.Events exposing (onClick, on, onWithOptions)
 import Json.Decode as Json exposing (Decoder, field)
 
 
@@ -98,10 +100,6 @@ type alias Config =
     }
 
 
-
--- PRIVATE PROPERTY TYPES
-
-
 type Visibility
     = Hidden
     | Opening
@@ -109,6 +107,15 @@ type Visibility
     | Details
     | SummaryClosing
     | DetailsClosing
+
+
+type OutMsg
+    = TransitionStarted String Visibility
+    | TransitionEnded String Visibility
+
+
+
+-- PRIVATE PROPERTY TYPES
 
 
 type alias Properties =
@@ -143,17 +150,19 @@ init =
 
 open : String -> State -> ( State, Cmd msg )
 open domId state =
-    ( mapProperties domId
-        (\props ->
-            { props
-                | visibility = Opening
-                , summaryHeight = Nothing
-                , detailsHeight = Nothing
-            }
-        )
-        state
-    , openAlert domId
-    )
+    let
+        ( _, nextState ) =
+            mapProperties domId
+                (\props ->
+                    { props
+                        | visibility = Opening
+                        , summaryHeight = Nothing
+                        , detailsHeight = Nothing
+                    }
+                )
+                state
+    in
+        ( nextState, openAlert domId )
 
 
 
@@ -166,82 +175,114 @@ type Msg
     = Resized String Float Float State
     | DetailsClicked String State
     | CloseClicked String State
+    | TransitionEnd String
 
 
 {-| Update function. No Cmds are returned.
 -}
-update : Msg -> State -> State
+update : Msg -> State -> ( State, Maybe OutMsg )
 update msg state =
     case msg of
         Resized domId sHeight dHeight state ->
-            resized domId sHeight dHeight state
+            let
+                ( props, nextState ) =
+                    resized domId sHeight dHeight state
+            in
+                ( nextState, Just <| TransitionStarted domId props.visibility )
 
         DetailsClicked domId state ->
-            detailsClicked domId state
+            let
+                ( props, nextState ) =
+                    detailsClicked domId state
+            in
+                ( nextState, Just <| TransitionStarted domId props.visibility )
 
         CloseClicked domId state ->
-            closeClicked domId state
+            let
+                ( props, nextState ) =
+                    closeClicked domId state
+            in
+                ( nextState, Just <| TransitionStarted domId props.visibility )
+
+        TransitionEnd domId ->
+            let
+                props =
+                    getProperties domId state
+            in
+                ( state, Just <| TransitionEnded domId props.visibility )
 
 
-resized : String -> Float -> Float -> State -> State
+resized : String -> Float -> Float -> State -> ( Properties, State )
 resized domId sHeight dHeight state =
-    mapProperties domId
-        (\props ->
-            { props
-                | visibility = Summary
-                , summaryHeight = Just sHeight
-                , detailsHeight = Just dHeight
-            }
-        )
-        state
-
-
-detailsClicked : String -> State -> State
-detailsClicked domId state =
-    mapProperties domId
-        (\props ->
-            case props.visibility of
-                Summary ->
-                    { props | visibility = Details }
-
-                Details ->
-                    { props | visibility = Summary }
-
-                _ ->
-                    props
-        )
-        state
-
-
-closeClicked : String -> State -> State
-closeClicked domId state =
-    mapProperties domId
-        (\props ->
-            case props.visibility of
-                Details ->
-                    { props | visibility = DetailsClosing }
-
-                Summary ->
-                    { props | visibility = SummaryClosing }
-
-                _ ->
-                    props
-        )
-        state
-
-
-mapProperties : String -> (Properties -> Properties) -> State -> State
-mapProperties domId mapperFn ((State alertProps) as state) =
     let
-        updateProperties =
-            getAlertProperties domId state
+        ( props, nextState ) =
+            mapProperties domId
+                (\props ->
+                    { props
+                        | visibility = Summary
+                        , summaryHeight = Just sHeight
+                        , detailsHeight = Just dHeight
+                    }
+                )
+                state
+    in
+        ( props, nextState )
+
+
+detailsClicked : String -> State -> ( Properties, State )
+detailsClicked domId state =
+    let
+        ( props, nextState ) =
+            mapProperties domId
+                (\props ->
+                    case props.visibility of
+                        Summary ->
+                            { props | visibility = Details }
+
+                        Details ->
+                            { props | visibility = Summary }
+
+                        _ ->
+                            props
+                )
+                state
+    in
+        ( props, nextState )
+
+
+closeClicked : String -> State -> ( Properties, State )
+closeClicked domId state =
+    let
+        ( props, nextState ) =
+            mapProperties domId
+                (\props ->
+                    case props.visibility of
+                        Details ->
+                            { props | visibility = DetailsClosing }
+
+                        Summary ->
+                            { props | visibility = SummaryClosing }
+
+                        _ ->
+                            props
+                )
+                state
+    in
+        ( props, nextState )
+
+
+mapProperties : String -> (Properties -> Properties) -> State -> ( Properties, State )
+mapProperties domId mapperFn ((State props) as state) =
+    let
+        nextProperties =
+            getProperties domId state
                 |> mapperFn
     in
-        State (Dict.insert domId updateProperties alertProps)
+        ( nextProperties, State (Dict.insert domId nextProperties props) )
 
 
-getAlertProperties : String -> State -> Properties
-getAlertProperties domId (State state) =
+getProperties : String -> State -> Properties
+getProperties domId (State state) =
     Dict.get domId state
         |> Maybe.withDefault
             { visibility = Hidden
@@ -271,13 +312,16 @@ view config state =
             resizeHandler config.domId state
 
         props =
-            getAlertProperties config.domId state
+            getProperties config.domId state
     in
         div
             [ id config.domId
             , class alertWrapperClass
             , style <| wrapperStylesFor props
             , on "alertSizes" decoder
+            , onWithOptions "transitionend"
+                { stopPropagation = False, preventDefault = True }
+                (Json.succeed <| TransitionEnd config.domId)
             ]
             [ viewContent config state ]
 
@@ -326,7 +370,7 @@ detailsContent domId details state =
         Just str ->
             let
                 props =
-                    getAlertProperties domId state
+                    getProperties domId state
             in
                 div
                     [ id (domId ++ "-details")
@@ -335,6 +379,10 @@ detailsContent domId details state =
                         , ( "open", detailsOpenFor props )
                         ]
                     , style <| detailsStylesFor props
+
+                    -- , onWithOptions "transitionend"
+                    -- { stopPropagation = False, preventDefault = True }
+                    -- (Json.succeed <| TransitionEnd domId)
                     ]
                     [ div [ class "content" ]
                         [ div []
