@@ -64,7 +64,7 @@ update msg model =
                 ( nextState, alertCmd ) =
                     Alert.dismiss config.domId model.alerts
             in
-                ( { model | alerts = nextState, index = i }, alertCmd )
+                ( { model | alerts = nextState }, alertCmd )
 
         AlertMsg subMsg ->
             let
@@ -78,6 +78,7 @@ update msg model =
                     Nothing ->
                         ( nextModel, Cmd.map AlertMsg subCmd )
 
+                    -- Alert.OutMsg handling can be used to schedule other actions
                     -- Alert.TranstionStarted
                     -- Alert.TransitionEnded
                     -- Alert.DismissalTimeout

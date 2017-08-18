@@ -41,9 +41,9 @@ containing information for the user.
 @docs view
 
 
-# Helpers
+# Observing an InfoBox's State
 
-@docs getContentClassNames
+@docs Visibility OutMsg
 
 -}
 
@@ -80,15 +80,19 @@ type alias Config =
 -- PUBLIC PROPERTIES AND OUTMESSAGES
 
 
-{-| What the target visibility will be.
+{-| The InfoBox's current or transitioning visibility.
 -}
 type Visibility
     = Hidden
     | Shown
 
 
-{-| Parent notifications, sent when user clicks (`TransitionStarted`), and when CSS transition finishes
-(`TransitionEnded`).
+{-| Notification messages that are passed up to the application that can be used to hook
+other actions.
+
+  - `TransitionStarted` sent when user clicks the open/close icon
+  - `TransitionEnded` sent when the CSS transition finishes
+
 -}
 type OutMsg
     = TransitionStarted String Visibility
@@ -105,19 +109,23 @@ type alias Properties =
     }
 
 
+type alias PrivateState =
+    Dict String Properties
+
+
 {-| Opaque type encapsulating the state of all info boxes in the parent's model.
 The global state is kept in an Elm Dict keyed on the DOM ids of the info box
 headers.
 -}
 type State
-    = State (Dict String Properties)
+    = State PrivateState
 
 
 
 -- INIT
 
 
-{-| Initialize the state of all info boxes in the model with an empty Dict.
+{-| Initialize the state of all InfoBoxes in the model with an empty Dict.
 -}
 init : State
 init =
@@ -135,24 +143,31 @@ type Msg
     | TransitionEnd String
 
 
-{-| Update function. OutMsg sent to parent.
+{-| Update function that maintains state of all InfoBoxes.
+
+User actions (clicks on the close and details elements) return a `TransitionStarted` `OutMsg`.
+
+DOM `tranistionend` events return a `TransitionEnded` `OutMsg`.
+
 -}
 update : Msg -> State -> ( State, Maybe OutMsg )
-update msg state =
+update msg ((State bag) as state) =
     case msg of
         IconClicked domId height ->
             let
-                ( props, nextState ) =
-                    mapProperties domId
-                        (\props ->
-                            { props
-                                | height = Just height
-                                , visibility = toggleVisibility props.visibility
-                            }
-                        )
-                        state
+                props =
+                    getProperties domId state
+
+                nextProperties =
+                    { props
+                        | height = Just height
+                        , visibility = toggleVisibility props.visibility
+                    }
+
+                nextBag =
+                    Dict.insert domId nextProperties bag
             in
-                ( nextState, Just <| TransitionStarted domId props.visibility )
+                ( State nextBag, Just <| TransitionStarted domId nextProperties.visibility )
 
         TransitionEnd domId ->
             let
@@ -160,16 +175,6 @@ update msg state =
                     getProperties domId state
             in
                 ( state, Just <| TransitionEnded domId props.visibility )
-
-
-mapProperties : String -> (Properties -> Properties) -> State -> ( Properties, State )
-mapProperties domId mapperFn ((State boxProps) as state) =
-    let
-        nextProperties =
-            getProperties domId state
-                |> mapperFn
-    in
-        ( nextProperties, State (Dict.insert domId nextProperties boxProps) )
 
 
 toggleVisibility : Visibility -> Visibility
@@ -183,8 +188,8 @@ toggleVisibility visibility =
 
 
 getProperties : String -> State -> Properties
-getProperties domId (State boxProps) =
-    Dict.get domId boxProps
+getProperties domId (State bag) =
+    Dict.get domId bag
         |> Maybe.withDefault
             { visibility = Hidden
             , height = Nothing
@@ -270,4 +275,11 @@ Using the DOM libary, you could also write this as:
 -}
 wellHeightDecoder : Decoder Float
 wellHeightDecoder =
-    Json.at [ "target", "parentElement", "nextSibling", "firstChild", "offsetHeight" ] Json.float
+    Json.at
+        [ "target"
+        , "parentElement"
+        , "nextSibling"
+        , "firstChild"
+        , "offsetHeight"
+        ]
+        Json.float

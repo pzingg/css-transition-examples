@@ -34,7 +34,7 @@ user can choose to expand if available.
 
 # Commands
 
-@docs open
+@docs open dismiss
 
 
 # Update
@@ -47,9 +47,9 @@ user can choose to expand if available.
 @docs view
 
 
-# Helpers
+# Observing an Alert's State
 
-@docs getContentClassNames
+@docs Visibility OutMsg
 
 -}
 
@@ -66,7 +66,7 @@ import Time exposing (Time)
 -- CONFIGURATION TYPES
 
 
-{-| Configuration union type describing the appearance of the alert
+{-| Configuration union type describing the appearance of the Alert
 (maps to Bootstrap alert styles).
 -}
 type Severity
@@ -75,7 +75,7 @@ type Severity
     | Success
 
 
-{-| Configuration union type describing when the alert should be dismissed:
+{-| Configuration union type describing when the Alert should be dismissed:
 after a specified number of seconds, after a page change in an SPA, or
 only manually (when a user clicks the close [x] button).
 -}
@@ -85,14 +85,14 @@ type Dismissal
     | DismissOnUserAction
 
 
-{-| Configuration record for fully specifying an alert.
+{-| Configuration record for fully specifying an Alert.
 
-  - `domId` must be a valid DOM id string, applied to an alert's wrapper element;
-    the id string must be unique for each alert used in the parent's model
-  - `summary` is the (required) string to be shown at the summary level of the
-    alert
-  - `details` is the (optional) string to be shown when the user clicks the
-    "details" link to expand the alert
+  - `domId` must be a valid DOM id string, applied to an Alert's wrapper element;
+    the id string must be unique for each Alert used in the parent's model
+  - `severity` specifes the Bootstrap color styles used to display the Alert
+  - `dismissal` specifies whether the Alert will be automatically dismissed after a time delay
+  - `summary` is the (required) string to be shown at the summary level of the Alert
+  - `details` is the (optional) string to be shown when the user clicks the "details" link to expand the Alert
 
 -}
 type alias Config =
@@ -104,6 +104,8 @@ type alias Config =
     }
 
 
+{-| Visibility state of the Alert, passed to the application in an `OutMsg`.
+-}
 type Visibility
     = Hidden
     | Opening
@@ -113,6 +115,9 @@ type Visibility
     | DetailsClosing
 
 
+{-| Notification messages that are passed up to the application that can be used to hook
+other actions.
+-}
 type OutMsg
     = TransitionStarted String Visibility
     | TransitionEnded String Visibility
@@ -138,8 +143,8 @@ type alias PrivateState =
     }
 
 
-{-| Opaque type encapsulating the state of all alerts in the parent's model.
-The global state is kept in an Elm Dict keyed on the DOM ids of the alert
+{-| Opaque type encapsulating the state of all Alerts in the parent's model.
+The global state is kept in an Elm Dict keyed on the DOM ids of the Alert
 wrappers.
 -}
 type State
@@ -150,7 +155,7 @@ type State
 -- INIT
 
 
-{-| Initialize the state of all alerts in the model with an empty Dict.
+{-| Initialize the state of all Alerts in the model with an empty Dict.
 -}
 init : State
 init =
@@ -161,6 +166,9 @@ init =
 -- COMMANDS
 
 
+{-| Set an Alert's visibility to `Opening`, record a new `instanceId`, and
+call `openAlert` to detect the heights of the Alert's content wells.
+-}
 open : Config -> State -> ( State, Cmd msg )
 open { domId, dismissal } ((State priv) as state) =
     let
@@ -183,6 +191,8 @@ open { domId, dismissal } ((State priv) as state) =
         ( nextState, openAlert domId )
 
 
+{-| Click an Alert's close button programmatically.
+-}
 dismiss : String -> State -> ( State, Cmd msg )
 dismiss domId state =
     let
@@ -206,7 +216,15 @@ type Msg
     | DismissalTimer String Int
 
 
-{-| Update function.
+{-| Update function that maintains the state of all Alerts.
+
+If Alert is just being opened (`Resized` message), returns a Cmd that will
+send a `DismissalTimer` message after a desginated delay.
+
+User actions (clicks on the close and details elements) return a `TransitionStarted` `OutMsg`.
+
+DOM `tranistionend` events return a `TransitionEnded` `OutMsg`.
+
 -}
 update : Msg -> State -> ( State, Cmd Msg, Maybe OutMsg )
 update msg state =
@@ -291,44 +309,36 @@ resized domId sHeight dHeight state =
 
 detailsClicked : String -> State -> ( State, Properties )
 detailsClicked domId state =
-    let
-        ( nextState, props ) =
-            mapProperties domId
-                (\props ->
-                    case props.visibility of
-                        Summary ->
-                            { props | visibility = Details }
+    mapProperties domId
+        (\props ->
+            case props.visibility of
+                Summary ->
+                    { props | dismissal = removeTimer props.dismissal, visibility = Details }
 
-                        Details ->
-                            { props | visibility = Summary }
+                Details ->
+                    { props | dismissal = removeTimer props.dismissal, visibility = Summary }
 
-                        _ ->
-                            props
-                )
-                state
-    in
-        ( nextState, props )
+                _ ->
+                    props
+        )
+        state
 
 
 closeClicked : String -> State -> ( State, Properties )
 closeClicked domId state =
-    let
-        ( nextState, props ) =
-            mapProperties domId
-                (\props ->
-                    case props.visibility of
-                        Details ->
-                            { props | visibility = DetailsClosing }
+    mapProperties domId
+        (\props ->
+            case props.visibility of
+                Details ->
+                    { props | dismissal = removeTimer props.dismissal, visibility = DetailsClosing }
 
-                        Summary ->
-                            { props | visibility = SummaryClosing }
+                Summary ->
+                    { props | dismissal = removeTimer props.dismissal, visibility = SummaryClosing }
 
-                        _ ->
-                            props
-                )
-                state
-    in
-        ( nextState, props )
+                _ ->
+                    props
+        )
+        state
 
 
 transitionEnd : String -> State -> ( State, Properties )
@@ -366,11 +376,11 @@ dismissalTimer domId instanceId ((State priv) as state) =
             getProperties domId state
 
         ( nextProperties, wasDismissed ) =
-            case ( props.instanceId == instanceId, props.visibility ) of
-                ( True, Details ) ->
+            case ( props.dismissal, props.instanceId == instanceId, props.visibility ) of
+                ( DismissAfter _, True, Details ) ->
                     ( { props | visibility = DetailsClosing }, True )
 
-                ( True, Summary ) ->
+                ( DismissAfter _, True, Summary ) ->
                     ( { props | visibility = SummaryClosing }, True )
 
                 _ ->
@@ -380,19 +390,6 @@ dismissalTimer domId instanceId ((State priv) as state) =
             { priv | bag = Dict.insert domId nextProperties priv.bag }
     in
         ( State nextPriv, wasDismissed )
-
-
-mapProperties : String -> (Properties -> Properties) -> State -> ( State, Properties )
-mapProperties domId mapperFn ((State priv) as state) =
-    let
-        nextProperties =
-            getProperties domId state
-                |> mapperFn
-
-        nextPriv =
-            { priv | bag = Dict.insert domId nextProperties priv.bag }
-    in
-        ( State nextPriv, nextProperties )
 
 
 getProperties : String -> State -> Properties
@@ -407,10 +404,35 @@ getProperties domId (State state) =
             }
 
 
+mapProperties : String -> (Properties -> Properties) -> State -> ( State, Properties )
+mapProperties domId f ((State priv) as state) =
+    let
+        nextProperties =
+            f <| getProperties domId state
+
+        nextPriv =
+            { priv | bag = Dict.insert domId nextProperties priv.bag }
+    in
+        ( State nextPriv, nextProperties )
+
+
+removeTimer : Dismissal -> Dismissal
+removeTimer dismissal =
+    case dismissal of
+        DismissAfter _ ->
+            DismissOnUserAction
+
+        _ ->
+            dismissal
+
+
 
 -- PORTS
 
 
+{-| JavaScript port that simply dispatches an `alertSizes` CustomEvent
+on the element with the specified DOM id.
+-}
 port openAlert : String -> Cmd msg
 
 
@@ -418,8 +440,13 @@ port openAlert : String -> Cmd msg
 -- VIEW
 
 
-{-| Render the alert, based on the configuration and the current state.
-Handles the "alertSizes" event sent via the `openAlert` port.
+{-| Render an Alert, based on the configuration and the current visibility.
+Handles DOM events:
+
+  - `click` on close and details elements
+  - `alertSizes` event sent via the `openAlert` port
+  - `transitionend` event dispatched when CSS transition is finished
+
 -}
 view : Config -> State -> Html Msg
 view config state =
@@ -568,7 +595,7 @@ detailsStylesFor { visibility, detailsHeight } =
 
 
 {-| Decode the height of the summary content element, which is the first
-child of the wrapper element that dispatched the "alertSizes" event.
+child of the wrapper element that dispatched the `alertSizes` event.
 -}
 wrapperHeightDecoder : Decoder Float
 wrapperHeightDecoder =
@@ -582,7 +609,7 @@ wrapperHeightDecoder =
 
 {-| Decode the height of the details content element, which is the first
 child of the last child of the summary content element, which is in turn,
-he first child of the wrapper element that dispatched the "alertSizes" event.
+he first child of the wrapper element that dispatched the `alertSizes` event.
 -}
 detailsHeightDecoder : Decoder Float
 detailsHeightDecoder =
@@ -596,7 +623,7 @@ detailsHeightDecoder =
         Json.float
 
 
-{-| When the "alertSizes" event is received, call this function to combine
+{-| When the `alertSizes` event is received, call this function to combine
 the results of the two content element height decoders and package the results
 into a "Resized" Alert.Msg value.
 -}
@@ -627,7 +654,7 @@ emptyHtml =
     text ""
 
 
-{-| Get the DOM class names for different types of alerts.
+{-| Get the DOM class names for different types of Alerts.
 -}
 getContentClassNames : Severity -> String
 getContentClassNames severity =

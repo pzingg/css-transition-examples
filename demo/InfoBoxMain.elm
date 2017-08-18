@@ -53,7 +53,9 @@ update msg model =
                     Nothing ->
                         ( nextModel, Cmd.none )
 
-                    -- InfoBox.TranstionStarted or InfoBox.TransitionEnded messages
+                    -- InfoBox.OutMsg handling can be used to schedule other actions
+                    -- InfoBox.TranstionStarted
+                    -- InfoBox.TransitionEnded
                     Just outMsg ->
                         let
                             _ =
