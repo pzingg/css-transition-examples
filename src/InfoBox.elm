@@ -1,32 +1,53 @@
-module InfoBox exposing (Config, State, Msg, init, update, view)
+module InfoBox
+    exposing
+        ( Visibility(..)
+        , OutMsg(..)
+        , Config
+        , State
+        , Msg
+        , init
+        , update
+        , view
+        )
 
 {-| This module encapsulates the behavior of an Elm "InfoBox" component.
 An InfoBox consists of an HTML header line ("h2", "h3", etc), with a (?)
 icon that when clicked, expands with animation to reveal a Bootstrap "well"
 containing information for the user.
 
+
 # Configuration
+
 @docs Config
 
+
 # Initialization
+
 @docs init
 
+
 # Commands
+
 @docs open
 
+
 # Update
+
 @docs update
 
+
 # View
+
 @docs view
 
+
 # Helpers
+
 @docs getContentClassNames
 
 -}
 
 import Dict exposing (Dict)
-import DOM
 import Html exposing (Html, node, text, div, i)
 import Html.Attributes exposing (id, class, style)
 import Html.Events exposing (onWithOptions)
@@ -38,13 +59,14 @@ import Json.Decode as Json exposing (Decoder, field)
 
 {-| Configuration record for fully specifying an info box.
 
-* `domId` must be a valid DOM id string, applied to an info box's header
-element; the id string must be unique for each info box used in the parent's model
-* `tagName` should be a "header" tag element type, such as "h2", "h3", "h4";
-the tag type will be appled to the header text.
-* `htext` is the (required) string for the header text
-* `content` is the Elm HTML content that is initially hidden but displayed
-when the user clicks the (?) icon in the header.
+  - `domId` must be a valid DOM id string, applied to an info box's header
+    element; the id string must be unique for each info box used in the parent's model
+  - `tagName` should be a "header" tag element type, such as "h2", "h3", "h4";
+    the tag type will be appled to the header text.
+  - `htext` is the (required) string for the header text
+  - `content` is the Elm HTML content that is initially hidden but displayed
+    when the user clicks the (?) icon in the header.
+
 -}
 type alias Config =
     { domId : String
@@ -55,12 +77,26 @@ type alias Config =
 
 
 
--- PRIVATE PROPERTIES
+-- PUBLIC PROPERTIES AND OUTMESSAGES
 
 
+{-| What the target visibility will be.
+-}
 type Visibility
     = Hidden
     | Shown
+
+
+{-| Parent notifications, sent when user clicks (`TransitionStarted`), and when CSS transition finishes
+(`TransitionEnded`).
+-}
+type OutMsg
+    = TransitionStarted String Visibility
+    | TransitionEnded String Visibility
+
+
+
+-- PRIVATE PROPERTIES
 
 
 type alias Properties =
@@ -96,32 +132,44 @@ init =
 -}
 type Msg
     = IconClicked String Float State
+    | TransitionEnd String
 
 
-{-| Update function. No Cmds are returned.
+{-| Update function. OutMsg sent to parent.
 -}
-update : Msg -> State -> State
+update : Msg -> State -> ( State, Maybe OutMsg )
 update msg state =
     case msg of
         IconClicked domId height state ->
-            mapProperties domId
-                (\props ->
-                    { props
-                        | height = Just height
-                        , visibility = toggleVisibility props.visibility
-                    }
-                )
-                state
+            let
+                ( props, nextState ) =
+                    mapProperties domId
+                        (\props ->
+                            { props
+                                | height = Just height
+                                , visibility = toggleVisibility props.visibility
+                            }
+                        )
+                        state
+            in
+                ( nextState, Just <| TransitionStarted domId props.visibility )
+
+        TransitionEnd domId ->
+            let
+                props =
+                    getProperties domId state
+            in
+                ( state, Just <| TransitionEnded domId props.visibility )
 
 
-mapProperties : String -> (Properties -> Properties) -> State -> State
+mapProperties : String -> (Properties -> Properties) -> State -> ( Properties, State )
 mapProperties domId mapperFn ((State boxProps) as state) =
     let
-        updateProperties =
+        nextProperties =
             getProperties domId state
                 |> mapperFn
     in
-        State (Dict.insert domId updateProperties boxProps)
+        ( nextProperties, State (Dict.insert domId nextProperties boxProps) )
 
 
 toggleVisibility : Visibility -> Visibility
@@ -184,6 +232,9 @@ view { domId, tagName, htext, content } state =
                 [ id domId
                 , class wrapperClass
                 , style [ ( "height", wrapperHeight ) ]
+                , onWithOptions "transitionend"
+                    { stopPropagation = False, preventDefault = True }
+                    (Json.succeed <| TransitionEnd domId)
                 ]
                 [ div [ class "well content" ]
                     [ content ]
@@ -203,20 +254,19 @@ next sibling of the parent of the icon that dispatched the click event.
 
 Using the DOM libary, you could also write this as:
 
-```elm
-wellHeightDecoder =
-    -- i (the click handler target)
-    DOM.target
-        (-- h2, h3 or h4
-         DOM.parentElement
-            (-- infoBoxWrapper div
-             DOM.nextSibling
-                (-- get offsetHeight of well div
-                 DOM.childNode 0 DOM.offsetHeight
+    wellHeightDecoder =
+        -- i (the click handler target)
+        DOM.target
+            (-- h2, h3 or h4
+             DOM.parentElement
+                (-- infoBoxWrapper div
+                 DOM.nextSibling
+                    (-- get offsetHeight of well div
+                     DOM.childNode 0 DOM.offsetHeight
+                    )
                 )
             )
-        )
-```
+
 -}
 wellHeightDecoder : Decoder Float
 wellHeightDecoder =

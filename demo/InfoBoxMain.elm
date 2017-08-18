@@ -2,7 +2,7 @@ module InfoBoxMain exposing (main)
 
 import Html exposing (Html, program, text, div, h1, h2, h3, h4, a, p, nav, ul, li)
 import Html.Attributes exposing (attribute, class, href)
-import InfoBox exposing (..)
+import InfoBox
 
 
 -- MODEL
@@ -42,7 +42,24 @@ update msg model =
             ( model, Cmd.none )
 
         InfoBoxMsg subMsg ->
-            ( { model | infoBoxes = InfoBox.update subMsg model.infoBoxes }, Cmd.none )
+            let
+                ( nextState, maybeMsg ) =
+                    InfoBox.update subMsg model.infoBoxes
+
+                nextModel =
+                    { model | infoBoxes = nextState }
+            in
+                case maybeMsg of
+                    Nothing ->
+                        ( nextModel, Cmd.none )
+
+                    -- InfoBox.TranstionStarted or InfoBox.TransitionEnded messages
+                    Just outMsg ->
+                        let
+                            _ =
+                                Debug.log "OutMsg" outMsg
+                        in
+                            ( nextModel, Cmd.none )
 
 
 

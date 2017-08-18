@@ -18,22 +18,34 @@ animated opening and closing and can present two levels of text information to
 the user--a summary level with a basic message and a details level that the
 user can choose to expand if available.
 
+
 # Configuration
+
 @docs Severity Dismissal Config
 
+
 # Initialization
+
 @docs init
 
+
 # Commands
+
 @docs open
 
+
 # Update
+
 @docs update
 
+
 # View
+
 @docs view
 
+
 # Helpers
+
 @docs getContentClassNames
 
 -}
@@ -69,12 +81,13 @@ type Dismissal
 
 {-| Configuration record for fully specifying an alert.
 
-* `domId` must be a valid DOM id string, applied to an alert's wrapper element;
-the id string must be unique for each alert used in the parent's model
-* `summary` is the (required) string to be shown at the summary level of the
-alert
-* `details` is the (optional) string to be shown when the user clicks the
-"details" link to expand the alert
+  - `domId` must be a valid DOM id string, applied to an alert's wrapper element;
+    the id string must be unique for each alert used in the parent's model
+  - `summary` is the (required) string to be shown at the summary level of the
+    alert
+  - `details` is the (optional) string to be shown when the user clicks the
+    "details" link to expand the alert
+
 -}
 type alias Config =
     { domId : String
@@ -393,7 +406,12 @@ child of the wrapper element that dispatched the "alertSizes" event.
 -}
 wrapperHeightDecoder : Decoder Float
 wrapperHeightDecoder =
-    Json.at [ "target", "firstChild", "offsetHeight" ] Json.float
+    Json.at
+        [ "target"
+        , "firstChild"
+        , "offsetHeight"
+        ]
+        Json.float
 
 
 {-| Decode the height of the details content element, which is the first
@@ -402,7 +420,14 @@ he first child of the wrapper element that dispatched the "alertSizes" event.
 -}
 detailsHeightDecoder : Decoder Float
 detailsHeightDecoder =
-    Json.at [ "target", "firstChild", "lastChild", "firstChild", "offsetHeight" ] Json.float
+    Json.at
+        [ "target"
+        , "firstChild"
+        , "lastChild"
+        , "firstChild"
+        , "offsetHeight"
+        ]
+        Json.float
 
 
 {-| When the "alertSizes" event is received, call this function to combine

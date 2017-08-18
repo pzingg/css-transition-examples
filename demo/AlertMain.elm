@@ -8,7 +8,7 @@ import Alert exposing (..)
 
 -- MODEL
 
-{-}
+
 type alias Model =
     { alerts : Alert.State
     }
