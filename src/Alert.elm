@@ -11,8 +11,9 @@ port module Alert
         , open
         , dismiss
         , update
-        , openAlert
         , view
+        , openAlert
+        , scrollToTop
         )
 
 {-| This module encapsulates the behavior of an Elm "Alert" component, based on
@@ -188,7 +189,7 @@ open { domId, dismissal } ((State priv) as state) =
                 )
                 (State { priv | currentId = instanceId })
     in
-        ( nextState, openAlert domId )
+        ( nextState, Cmd.batch [ openAlert domId, scrollToTop () ] )
 
 
 {-| Click an Alert's close button programmatically.
@@ -434,6 +435,11 @@ removeTimer dismissal =
 on the element with the specified DOM id.
 -}
 port openAlert : String -> Cmd msg
+
+
+{-| JavaScript port that uses CSSOM smooth scrolling behavior.
+-}
+port scrollToTop : () -> Cmd msg
 
 
 
