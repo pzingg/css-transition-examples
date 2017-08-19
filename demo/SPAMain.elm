@@ -1,11 +1,12 @@
 module SPAMain exposing (..)
 
 import Html exposing (Html, Attribute, div, nav, ul, li, a, h1, h2, h3, h4, p, text)
-import Html.Attributes exposing (class, href, attribute)
+import Html.Attributes exposing (id, class, classList, href, attribute)
 import Html.Events exposing (onWithOptions)
 import Json.Decode as Json
 import Navigation
 import UrlParser
+import List.Nonempty as Nonempty exposing (Nonempty)
 
 
 -- MESSAGES
@@ -19,6 +20,7 @@ import UrlParser
 type Msg
     = ChangeLocation String
     | OnLocationChange Navigation.Location
+    | TransitionEnd Route
 
 
 
@@ -33,6 +35,8 @@ type Msg
 type alias Model =
     { route : Route
     , changes : Int
+    , loadedRoutes : Nonempty Route
+    , sliding : Bool
     }
 
 
@@ -43,6 +47,8 @@ initialModel : Route -> Model
 initialModel route =
     { route = route
     , changes = 0
+    , loadedRoutes = Nonempty.fromElement route
+    , sliding = False
     }
 
 
@@ -112,7 +118,35 @@ update msg model =
                 newRoute =
                     parseLocation location
             in
-                ( { model | route = newRoute }, Cmd.none )
+                case model.route == newRoute of
+                    True ->
+                        ( model, Cmd.none )
+
+                    False ->
+                        ( { model
+                            | route = newRoute
+                            , loadedRoutes = pushRoute newRoute model.loadedRoutes
+                            , sliding = True
+                          }
+                        , Cmd.none
+                        )
+
+        TransitionEnd route ->
+            let
+                _ =
+                    Debug.log "TransitionEnd" route
+            in
+                ( { model | sliding = False, loadedRoutes = Nonempty.dropTail model.loadedRoutes }, Cmd.none )
+
+
+pushRoute : Route -> Nonempty Route -> Nonempty Route
+pushRoute route stack =
+    case Nonempty.isSingleton stack of
+        True ->
+            Nonempty.cons route stack
+
+        False ->
+            Nonempty.cons route <| Nonempty.dropTail stack
 
 
 
@@ -121,17 +155,41 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div [ class "container" ]
-        ([ div
-            [ class "header clearfix" ]
-            [ navbar model
-            , h3
-                [ class "text-muted" ]
-                [ text "CSS Transitions in Elm" ]
+    let
+        pages =
+            Nonempty.toList model.loadedRoutes
+                |> List.map (\route -> page route model)
+                |> List.reverse
+                |> List.indexedMap (,)
+    in
+        div [ class "container" ]
+            [ div
+                [ class "header clearfix" ]
+                [ navbar model
+                , h3
+                    [ class "text-muted" ]
+                    [ text "CSS Transitions in Elm" ]
+                ]
+            , div [ class "jumbotron" ]
+                [ h1 []
+                    [ pageText model.route model.changes ]
+                , p [ class "lead" ]
+                    [ text "Cras justo odio, dapibus ac facilisis in, egestas eget quam. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus." ]
+                , p []
+                    [ a [ class "btn btn-lg btn-success", href "#", attribute "role" "button" ]
+                        [ text "Sign up today" ]
+                    ]
+                ]
+            , carousel pages
             ]
-         ]
-            ++ page model
-        )
+
+
+carousel : List ( Int, Html Msg ) -> Html Msg
+carousel pages =
+    div [ class "carousel slide", attribute "data-ride" "carousel", id "page-carousel" ]
+        [ div [ class "carousel-inner" ]
+            (List.map Tuple.second pages)
+        ]
 
 
 {-| When clicking a link we want to prevent the default browser behaviour which is to load a new page.
@@ -171,44 +229,57 @@ navbar model =
 
 {-| Decide what to show based on the current `model.route`
 -}
-page : Model -> List (Html Msg)
-page model =
-    [ div [ class "jumbotron" ]
-        [ h1 []
-            [ pageText model ]
-        , p [ class "lead" ]
-            [ text "Cras justo odio, dapibus ac facilisis in, egestas eget quam. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus." ]
-        , p []
-            [ a [ class "btn btn-lg btn-success", href "#", attribute "role" "button" ]
-                [ text "Sign up today" ]
+page : Route -> Model -> Html Msg
+page route model =
+    let
+        sliding =
+            model.sliding && (not (Nonempty.isSingleton model.loadedRoutes))
+
+        ( active, next ) =
+            case ( sliding, route == model.route ) of
+                ( True, True ) ->
+                    ( False, True )
+
+                ( True, False ) ->
+                    ( True, False )
+
+                ( False, True ) ->
+                    ( True, False )
+
+                ( False, False ) ->
+                    ( False, False )
+    in
+        div
+            [ classList
+                [ ( "item", True ), ( "active", active ), ( "next", next ), ( "left", sliding ) ]
+            , onWithOptions "transitionend"
+                { stopPropagation = True, preventDefault = True }
+                (Json.succeed <| TransitionEnd route)
             ]
-        ]
-    , div [ class "row marketing" ]
-        [ div [ class "col-lg-12" ]
-            [ h4 []
-                [ pageText model ]
-            , p []
-                [ text "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque sit amet tellus tincidunt, auctor orci quis, porttitor ex. Sed sed varius magna, in mollis mauris. Nullam pharetra lacus justo, sed placerat est elementum sit amet. Aliquam fermentum eu est eu ullamcorper. Sed magna eros, dictum eget ligula vel, pellentesque blandit eros. Aenean euismod ante in aliquet cursus. Pellentesque et ultricies libero. Duis malesuada velit quam, sed pharetra ipsum volutpat nec. Donec eu mauris eros. In hac habitasse platea dictumst. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Fusce molestie, nibh id semper pretium, velit tellus pellentesque mauris, nec bibendum erat diam quis ligula. In volutpat elementum vulputate. Morbi rutrum enim nisi, sit amet faucibus urna facilisis sit amet. Praesent tortor libero, hendrerit vel vulputate ac, sagittis sit amet quam. Etiam ligula justo, semper in risus non, elementum scelerisque sem." ]
-            , p []
-                [ text "Nunc laoreet, orci sit amet euismod pretium, tortor tellus pellentesque mauris, vitae suscipit enim augue eget arcu. Morbi hendrerit est quis urna porta, eu tincidunt turpis porttitor. Nullam hendrerit a neque a consequat. Vivamus neque metus, vehicula cursus eros vel, consectetur fringilla est. Praesent dapibus aliquet ex sed rhoncus. Cras vel eleifend enim. Duis sollicitudin, eros non tempus bibendum, felis lorem cursus massa, vel ultricies ex enim et velit. Nam tincidunt neque eget dignissim maximus. Ut eu velit rutrum, feugiat tortor et, elementum nulla. Pellentesque dolor libero, iaculis non efficitur ac, finibus eu lacus." ]
-            , p []
-                [ text "Morbi a vulputate magna. Donec mattis mauris quis dui venenatis facilisis. Proin imperdiet, justo eu feugiat lobortis, nunc velit consequat lorem, et pharetra justo mauris ut lorem. Maecenas consequat velit sed nisl facilisis, ac semper velit cursus. Cras non leo non eros sollicitudin luctus. Aliquam cursus libero at elit tincidunt imperdiet. Donec luctus luctus laoreet. Cras eleifend lacus vitae lorem porttitor, pellentesque tincidunt felis ornare. Sed in fringilla sapien, vitae imperdiet magna. Phasellus vitae est nisi. Praesent quis sapien dignissim, aliquet nulla id, suscipit urna. Etiam vel neque diam. Suspendisse velit tellus, molestie non efficitur quis, congue eget ipsum." ]
+            [ div
+                [ class "container" ]
+                [ div
+                    [ class "row" ]
+                    [ h4 []
+                        [ pageText route model.changes ]
+                    , p []
+                        [ text "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque sit amet tellus tincidunt, auctor orci quis, porttitor ex. Sed sed varius magna, in mollis mauris. Nullam pharetra lacus justo, sed placerat est elementum sit amet. Aliquam fermentum eu est eu ullamcorper. Sed magna eros, dictum eget ligula vel, pellentesque blandit eros. Aenean euismod ante in aliquet cursus. Pellentesque et ultricies libero. Duis malesuada velit quam, sed pharetra ipsum volutpat nec. Donec eu mauris eros. In hac habitasse platea dictumst. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Fusce molestie, nibh id semper pretium, velit tellus pellentesque mauris, nec bibendum erat diam quis ligula. In volutpat elementum vulputate. Morbi rutrum enim nisi, sit amet faucibus urna facilisis sit amet. Praesent tortor libero, hendrerit vel vulputate ac, sagittis sit amet quam. Etiam ligula justo, semper in risus non, elementum scelerisque sem." ]
+                    ]
+                ]
             ]
-        ]
-    ]
 
 
-pageText : Model -> Html Msg
-pageText model =
-    case model.route of
+pageText : Route -> Int -> Html Msg
+pageText route changes =
+    case route of
         HomeRoute ->
-            text ("Home - " ++ toString model.changes ++ " changes")
+            text ("Home - " ++ toString changes ++ " changes")
 
         AboutRoute ->
-            text ("About - " ++ toString model.changes ++ " changes")
+            text ("About - " ++ toString changes ++ " changes")
 
         NotFoundRoute ->
-            text ("Not Found - " ++ toString model.changes ++ " changes")
+            text ("Not Found - " ++ toString changes ++ " changes")
 
 
 
