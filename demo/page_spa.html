@@ -29,6 +29,17 @@
   <body>
       <div id="root"></div>
       <script src="./elm.js"></script>
-      <script>Elm.SPAMain.embed(document.getElementById('root'));</script>
+      <script>
+        var app = Elm.SPAMain.embed(document.getElementById('root'));
+
+        // From bootstrap.js -- force reflow at beginning of transition
+        app.ports.forceReflow.subscribe(function() {
+            var items = document.getElementsByClassName('spa-page-item');
+            console.log('getting offsetWidth for ' + items.length + ' carousel items');
+            for (var i = 0; i < items.length; i++) {
+                var w = items[i].offsetWidth; // force reflow
+            }
+        });
+      </script>
   </body>
 </html>
