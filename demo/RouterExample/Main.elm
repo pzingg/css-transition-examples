@@ -1,6 +1,6 @@
-port module SPAMain exposing (main)
+port module RouterExample.Main exposing (main)
 
-{-| SPAMain.elm: A simple single file Elm SPA application demonstrating how to adapt Bootstrap's Carousel component
+{-| RouterExample.Main.elm: A simple single file Elm SPA application demonstrating how to adapt Bootstrap's Carousel component
 to demonstrate "router transition" animations in pure Elm and CSS. No JavaScript is required for the animation, but we do
 use one JavaScript port that kickstarts the resizing of carousel items just before the CSS transition transform is set.
 
@@ -333,10 +333,10 @@ view model =
                 |> List.filter (\r -> r /= NoRoute)
                 |> List.indexedMap (,)
 
-        -- use the pageItem function to generate the carousel items
-        pageItems =
+        -- use the carouselItem function to generate the carousel items
+        carouselItems =
             routes
-                |> List.map (\( i, route ) -> ( i, pageItem route model ))
+                |> List.map (\( i, route ) -> ( i, carouselItem route model ))
 
         infos =
             routes
@@ -377,7 +377,7 @@ view model =
                       ]
                     ]
                 )
-            , carousel pageItems
+            , carousel carouselItems
             ]
 
 
@@ -422,23 +422,23 @@ onLinkClick message =
         onWithOptions "click" options (Json.succeed message)
 
 
-{-| Generate the HTML for a Bootstrap Carousel container. `pageItems` is an indexed list of the content
+{-| Generate the HTML for a Bootstrap Carousel container. `carouselItems` is an indexed list of the content
 that will be displayed for each carousel item.
 -}
 carousel : List ( Int, Html Msg ) -> Html Msg
-carousel pageItems =
+carousel carouselItems =
     div [ class "carousel slide", attribute "data-ride" "carousel", id "page-carousel" ]
         [ div [ class "carousel-inner" ]
-            (List.map Tuple.second pageItems)
+            (List.map Tuple.second carouselItems)
         ]
 
 
 {-| Sample Bootstrap Carousel `item` page generated for a route.
 -}
-pageItem : Route -> Model -> Html Msg
-pageItem route model =
+carouselItem : Route -> Model -> Html Msg
+carouselItem route model =
     div
-        [ class <| pageItemClasses route model
+        [ class <| carouselItemClasses route model
         , onWithOptions "transitionend"
             { stopPropagation = True, preventDefault = True }
             (Json.succeed <| TransitionEnd (nextRoute model))
@@ -494,7 +494,7 @@ pageInfo i route model =
             , br [] []
             , text ("Route " ++ toString route)
             , br [] []
-            , text ("Classes " ++ pageItemClasses route model)
+            , text ("Classes " ++ carouselItemClasses route model)
             ]
         ]
 
@@ -504,8 +504,8 @@ the current "active" route (the route the application is transitioning from), or
 (the route the application is transitioning to), or the case where there is no "next" route (after the
 transition is finished).
 -}
-pageItemClasses : Route -> Model -> String
-pageItemClasses route model =
+carouselItemClasses : Route -> Model -> String
+carouselItemClasses route model =
     let
         singleton =
             model.next == Nothing
@@ -523,19 +523,21 @@ pageItemClasses route model =
 
                 _ ->
                     ( route == activeRoute model, False, False )
+
+        -- Borrowed from Html.classList.
+        -- Given a list of tuples of ( String, Bool ), join the strings for which the boolean is True.
+        itemClasses list =
+            list
+                |> List.filter Tuple.second
+                |> List.map Tuple.first
+                |> String.join " "
     in
-        itemClasses [ ( "item spa-page-item", True ), ( "active", active ), ( "next", next ), ( "left", direction ) ]
-
-
-{-| Borrowed from Html.classList. Given a list of tuples of ( String, Bool ), join the strings for which the boolean
-is True.
--}
-itemClasses : List ( String, Bool ) -> String
-itemClasses list =
-    list
-        |> List.filter Tuple.second
-        |> List.map Tuple.first
-        |> String.join " "
+        itemClasses
+            [ ( "item spa-page-item", True )
+            , ( "active", active )
+            , ( "next", next )
+            , ( "left", direction )
+            ]
 
 
 {-| Send a message some time in the future.

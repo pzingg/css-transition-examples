@@ -1,14 +1,16 @@
-module Main exposing (main)
+module InfoBoxExample.Main exposing (main)
 
 import Html exposing (Html, program, text, div, h1, h2, h3, h4, a, p, nav, ul, li)
 import Html.Attributes exposing (attribute, class, href)
+import InfoBox
 
 
 -- MODEL
 
 
 type alias Model =
-    String
+    { infoBoxes : InfoBox.State
+    }
 
 
 
@@ -17,6 +19,7 @@ type alias Model =
 
 type Msg
     = NoOp
+    | InfoBoxMsg InfoBox.Msg
 
 
 
@@ -25,7 +28,7 @@ type Msg
 
 init : ( Model, Cmd Msg )
 init =
-    ( "Hello", Cmd.none )
+    ( { infoBoxes = InfoBox.init }, Cmd.none )
 
 
 
@@ -38,13 +41,45 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
+        InfoBoxMsg subMsg ->
+            let
+                ( nextState, maybeMsg ) =
+                    InfoBox.update subMsg model.infoBoxes
+
+                nextModel =
+                    { model | infoBoxes = nextState }
+            in
+                case maybeMsg of
+                    Nothing ->
+                        ( nextModel, Cmd.none )
+
+                    -- InfoBox.OutMsg handling can be used to schedule other actions
+                    -- InfoBox.TranstionStarted
+                    -- InfoBox.TransitionEnded
+                    Just outMsg ->
+                        let
+                            _ =
+                                Debug.log "OutMsg" outMsg
+                        in
+                            ( nextModel, Cmd.none )
+
 
 
 -- VIEW
 
 
+ibExampleConfig : InfoBox.Config
+ibExampleConfig =
+    { domId = "ib-example"
+    , tagName = "h3"
+    , htext = "Click here to get more information"
+    , content =
+        div [] [ text "Cras justo odio, dapibus ac facilisis in, egestas eget quam. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus." ]
+    }
+
+
 view : Model -> Html Msg
-view _ =
+view model =
     div [ class "container" ]
         [ div [ class "header clearfix" ]
             [ nav []
@@ -67,8 +102,8 @@ view _ =
                 [ text "CSS Transitions in Elm" ]
             ]
         , div [ class "jumbotron" ]
-            [ h1 []
-                [ text "Jumbotron heading" ]
+            [ h2 []
+                [ text "Info Box Example" ]
             , p [ class "lead" ]
                 [ text "Cras justo odio, dapibus ac facilisis in, egestas eget quam. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus." ]
             , p []
@@ -77,15 +112,9 @@ view _ =
                 ]
             ]
         , div [ class "row marketing" ]
-            [ div [ class "col-lg-6" ]
-                [ h4 []
-                    [ text "Subheading" ]
-                , p []
-                    [ text "Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum." ]
-                ]
-            , div [ class "col-lg-6" ]
-                [ h4 []
-                    [ text "Subheading" ]
+            [ div [ class "col-lg-12" ]
+                [ InfoBox.view ibExampleConfig model.infoBoxes
+                    |> Html.map InfoBoxMsg
                 , p []
                     [ text "Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum." ]
                 ]

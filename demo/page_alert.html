@@ -15,10 +15,10 @@
     <link href="bootstrap-dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom styles for this template -->
-    <link href="jumbotron-narrow.css" rel="stylesheet">
+    <link href="css/jumbotron-narrow.css" rel="stylesheet">
 
     <!-- Custom styles for the Alert example -->
-    <link href="alert.css" rel="stylesheet">
+    <link href="css/alert.css" rel="stylesheet">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -28,11 +28,13 @@
   </head>
   <body>
       <div id="root"></div>
-      <script src="./elm.js"></script>
-      <script src="./smoothscroll.js"></script>
+      <script src="elm.js"></script>
+
+      <!-- polyfill for scroll-behavior -->
+      <script src="js/smoothscroll.js"></script>
       <script>
       // Embed Elm app and define ports
-      var app = Elm.AlertMain.embed(document.getElementById('root'));
+      var app = Elm.AlertExample.Main.embed(document.getElementById('root'));
 
       // port openAlert : String -> Cmd msg
       app.ports.openAlert.subscribe(function(domId) {
