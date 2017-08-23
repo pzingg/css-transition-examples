@@ -15,10 +15,10 @@
     <link href="bootstrap-dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom styles for this template -->
-    <link href="jumbotron-narrow.css" rel="stylesheet">
+    <link href="css/jumbotron-narrow.css" rel="stylesheet">
 
-    <!-- Custom styles for this template -->
-    <link href="alert.css" rel="stylesheet">
+    <!-- Custom styles for the Alert example -->
+    <link href="css/alert.css" rel="stylesheet">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -28,10 +28,13 @@
   </head>
   <body>
       <div id="root"></div>
-      <script src="./elm.js"></script>
+      <script src="elm.js"></script>
+
+      <!-- polyfill for scroll-behavior -->
+      <script src="js/smoothscroll.js"></script>
       <script>
       // Embed Elm app and define ports
-      var app = Elm.AlertMain.embed(document.getElementById('root'));
+      var app = Elm.AlertExample.Main.embed(document.getElementById('root'));
 
       // port openAlert : String -> Cmd msg
       app.ports.openAlert.subscribe(function(domId) {
@@ -53,62 +56,10 @@
       }
 
       // Smooth scrolling to top of page
-      function smoothScrollToTop() {
-          return smoothScroll(scrollTop_(), 0);
-      }
-
-      // Smooth scrolling
-      function smoothScroll(startY, stopY) {
-          var distance = Math.abs(startY - stopY);
-          if (distance < 100) {
-              scrollTo(0, stopY);
-              return false;
-          }
-
-          var speed = Math.round(distance / 100);
-          if (speed >= 10)
-              speed = 10;
-
-          var step = Math.round(distance / 25);
-          var leapY = startY;
-          var timer = 0;
-
-          if (stopY > startY) {
-              for (var i = startY; i < stopY; i += step) {
-                  leapY += step;
-                  if (leapY > stopY)
-                      leapY = stopY;
-                  setTimeout('window.scrollTo(0, ' + leapY + ')', timer * speed);
-                  timer++;
-              }
-          } else {
-              for (var i = startY; i > stopY; i -= step) {
-                  leapY -= step;
-                  if (leapY < stopY)
-                      leapY = stopY;
-                  setTimeout('window.scrollTo(0, ' + leapY + ')', timer * speed);
-                  timer++;
-              }
-          }
-          return false;
-      }
-
-      // Portable version to get current scrollTop value
-      function scrollTop_() {
-          // Firefox, Chrome, Opera, Safari
-          if (self.pageYOffset)
-              return self.pageYOffset;
-
-          // Internet Explorer 6 - standards mode
-          if (document.documentElement && document.documentElement.scrollTop)
-              return document.documentElement.scrollTop;
-
-          // Internet Explorer 6, 7 and 8
-          if (document.body.scrollTop)
-              return document.body.scrollTop;
-
-          return 0;
-      }
+      // Use CSSOM scroll behavior or Dustan Kasten's polyfill
+      app.ports.scrollToTop.subscribe(function() {
+          return window.scrollTo({ behavior: 'smooth', left: 0, top: 0 });
+      });
       </script>
   </body>
 </html>

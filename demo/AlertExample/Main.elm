@@ -1,4 +1,4 @@
-module AlertMain exposing (main)
+module AlertExample.Main exposing (main)
 
 import Html exposing (Html, program, text, div, h1, h2, h3, h4, a, p, nav, ul, li)
 import Html.Attributes exposing (attribute, class, style, href)
@@ -182,7 +182,17 @@ view model =
             [ h3 []
                 [ text "Alerts need to use ports" ]
             , p []
-                [ text "Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum." ]
+                [ text "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam risus tellus, maximus ut iaculis non, rhoncus sit amet nisl. Quisque nec nisl convallis, lobortis orci vel, volutpat velit. Proin sed commodo purus, in lobortis mauris. Curabitur commodo commodo luctus. Aenean et tellus eu urna rhoncus accumsan. Aenean sed magna massa. Sed a pulvinar ante, eget sagittis tellus." ]
+            , p []
+                [ text "ibulum malesuada, odio nisi imperdiet sapien, semper semper lorem massa gravida risus. Quisque massa lectus, gravida at posuere vel, tristique vitae purus. In molestie, lorem vel placerat tempor, augue sem ultrices mi, et commodo ante lorem non lorem. In accumsan, justo eget hendrerit facilisis, diam erat sagittis mi, at bibendum est ante ac ante. Vivamus rhoncus faucibus velit, id elementum risus mattis sed. Ut odio metus, vulputate sit amet feugiat eu, fermentum in neque. Mauris sollicitudin vehicula tortor, a mollis libero aliquet sed. Donec venenatis erat eu lacus lacinia, quis lacinia lectus blandit." ]
+            , p []
+                [ text "Phasellus ac massa sed est tempus feugiat. Vivamus ultricies commodo urna vitae ultrices. Proin tincidunt felis non lectus vestibulum, non scelerisque lectus auctor. Cras vel mi elit. Morbi porta non nunc ac rutrum. Etiam auctor elementum hendrerit. Nulla quis imperdiet nisl, ut porta tellus. Fusce nec nibh feugiat, euismod odio eget, cursus purus. Donec nec consequat purus, at euismod orci. Nulla ac dictum sem. Nunc blandit et augue vel malesuada." ]
+            , p []
+                [ text "Aliquam erat volutpat. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Nulla sapien ante, varius at sapien ac, accumsan mollis risus. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Pellentesque blandit quam quis luctus condimentum. Nam mattis egestas nulla et lobortis. Ut consequat nisi id maximus pretium. Proin venenatis aliquet molestie. Pellentesque mattis dui augue, nec laoreet tellus accumsan in. Sed ornare egestas ipsum sodales accumsan. Pellentesque aliquam vulputate lacinia. Donec rutrum mi neque. Nam sed mauris quis lorem varius dictum." ]
+            , p []
+                [ text "Cras mauris diam, lacinia vitae dolor sit amet, dignissim molestie velit. Vestibulum enim nibh, condimentum vestibulum orci non, dapibus luctus turpis. Donec molestie ligula risus, a tincidunt metus ultrices id. Morbi eu posuere metus. Aliquam ac pulvinar sapien. Duis in velit et augue suscipit tincidunt iaculis ac velit. Fusce nec sem ante." ]
+            , p []
+                [ text "Duis quam est, dapibus vitae tincidunt a, maximus sit amet metus. Donec vitae lacinia sapien. Aenean sem sapien, mattis id hendrerit et, efficitur vel quam. Pellentesque tellus mi, rutrum non dolor a, scelerisque lobortis arcu. Sed et euismod risus, a facilisis justo. Nam facilisis, arcu eu tempus aliquet, tortor libero maximus lacus, faucibus dignissim felis lacus vitae dolor. Quisque ornare eros nulla, nec varius ex luctus nec. In sit amet sem velit. Donec non felis sed ipsum scelerisque tempor. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nunc euismod felis in nisi tincidunt suscipit. Suspendisse pulvinar lectus eget orci elementum, vehicula ultricies neque vestibulum. Duis sollicitudin augue sed ornare volutpat. In volutpat ipsum est. Duis dapibus, est id tempor porta, est ligula sodales arcu, sit amet vehicula nibh enim sollicitudin neque. Maecenas eleifend iaculis quam in fringilla." ]
             ]
         ]
 

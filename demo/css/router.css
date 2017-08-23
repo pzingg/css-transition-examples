@@ -1,0 +1,12 @@
+@media all and (transform-3d), (-webkit-transform-3d) {
+  .carousel-inner > .item {
+    -webkit-transition: -webkit-transform 5s ease-in-out;
+         -o-transition:      -o-transform 5s ease-in-out;
+            transition:         transform 5s ease-in-out;
+
+    -webkit-backface-visibility: visible;
+            backface-visibility: visible;
+    -webkit-perspective: none;
+            perspective: none;
+  }
+}

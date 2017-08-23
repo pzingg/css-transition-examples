@@ -15,7 +15,10 @@
     <link href="bootstrap-dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom styles for this template -->
-    <link href="jumbotron-narrow.css" rel="stylesheet">
+    <link href="css/jumbotron-narrow.css" rel="stylesheet">
+
+    <!-- Custom styles for the router carousel example -->
+    <link href="css/router.css" rel="stylesheet">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -25,7 +28,18 @@
   </head>
   <body>
       <div id="root"></div>
-      <script src="./elm.js"></script>
-      <script>Elm.Main.embed(document.getElementById('root'));</script>
+      <script src="elm.js"></script>
+      <script>
+        var app = Elm.RouterExample.Main.embed(document.getElementById('root'));
+
+        // From bootstrap.js -- force reflow at beginning of transition
+        app.ports.forceReflow.subscribe(function() {
+            var items = document.getElementsByClassName('spa-page-item');
+            console.log('getting offsetWidth for ' + items.length + ' carousel items');
+            for (var i = 0; i < items.length; i++) {
+                var w = items[i].offsetWidth; // force reflow
+            }
+        });
+      </script>
   </body>
 </html>
