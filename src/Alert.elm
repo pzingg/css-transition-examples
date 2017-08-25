@@ -682,19 +682,19 @@ smallLinkButtonClass =
 
 alertWrapperClass : String
 alertWrapperClass =
-    "alert-wrapper row"
+    "alert-wrapper"
 
 
 alertErrorClass : String
 alertErrorClass =
-    "alert alert-danger alert-dismissable error col-xs-12"
+    "alert alert-danger alert-dismissable error"
 
 
 alertInfoClass : String
 alertInfoClass =
-    "alert alert-info alert-dismissable info col-xs-12"
+    "alert alert-info alert-dismissable info"
 
 
 alertSuccessClass : String
 alertSuccessClass =
-    "alert alert-success alert-dismissable col-xs-12"
+    "alert alert-success alert-dismissable success"

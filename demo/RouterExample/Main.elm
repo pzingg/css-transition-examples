@@ -437,19 +437,19 @@ carousel carouselItems =
 -}
 carouselItem : Route -> Model -> Html Msg
 carouselItem route model =
-    div
-        [ class <| carouselItemClasses route model
-        , onWithOptions "transitionend"
-            { stopPropagation = True, preventDefault = True }
-            (Json.succeed <| TransitionEnd (nextRoute model))
-        ]
-        [ div
-            [ class "container" ]
-            [ div
-                [ class "row" ]
-                (pageContent route model.changes)
+    let
+        content =
+            pageContent route model.changes
+    in
+        div
+            [ class <| carouselItemClasses route model
+            , onWithOptions "transitionend"
+                { stopPropagation = True, preventDefault = True }
+                (Json.succeed <| TransitionEnd (nextRoute model))
             ]
-        ]
+            [ div [ class "row" ]
+                [ div [ class "col-lg-12" ] content ]
+            ]
 
 
 {-| Sample content for a page. Obviously a real application would have different `page` functions for each route.

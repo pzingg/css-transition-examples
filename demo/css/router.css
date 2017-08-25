@@ -9,4 +9,7 @@
     -webkit-perspective: none;
             perspective: none;
   }
+  .carousel-inner > .item.next {
+      transition-delay: 100ms;
+  }
 }
