@@ -1,19 +1,15 @@
 ##  Sending the `Resized` message
 
-Map the two decoders to convert the alertSizes DOM event
-into a `Resized` Elm message
-
-```elm
-resizeHandler : String -> Dismissal -> Json.Decode.Decoder Msg
+<pre><code class="elm" data-trim data-noescape>resizeHandler : String -> Dismissal -> Json.Decode.Decoder Msg
 resizeHandler domId dismissal =
-    Json.map2 (,) wrapperHeightDecoder detailsHeightDecoder
+    Json.Decode.map2 (,) wrapperHeightDecoder detailsHeightDecoder
         |> Json.andThen
             (\( summaryHeight, detailsHeight ) ->
-                Resized domId dismissal summaryHeight detailsHeight
-                    |> Json.Decode.succeed
+                <mark>Resized domId dismissal summaryHeight detailsHeight</mark>
+                    <mark>|> Json.Decode.succeed</mark>
             )
-```
+</code></pre>
 
 note:
-    Put your speaker notes here.
-    You can see them pressing 's'.
+    Now that we have the two decoders we can use Json.Decode.map2 to combine the results of decoding the
+    alertSizes DOM event, and then package the height values into a `Resized` Elm message

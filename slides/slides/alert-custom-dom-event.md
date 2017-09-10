@@ -1,4 +1,4 @@
-##  Custom alertSizes DOM event
+##  Custom &ldquo;alertSizes&rdquo; DOM event
 
 ```js
 // port openAlertNextFrame : String -> Cmd msg
