@@ -314,18 +314,18 @@ subscription can be removed.
 initialPainted : State -> ( State, Cmd Msg )
 initialPainted (State priv) =
     let
-        initialPaintAccumulator domId props ( dictProps, xsCmds ) =
+        openAlerts domId props ( bag, xsCmds ) =
             case props.visibility of
                 InitialPaint ->
-                    ( Dict.insert domId { props | visibility = Opening } dictProps
+                    ( Dict.insert domId { props | visibility = Opening } bag
                     , (openAlertImmediate domId) :: xsCmds
                     )
 
                 _ ->
-                    ( Dict.insert domId props dictProps, xsCmds )
+                    ( Dict.insert domId props bag, xsCmds )
 
         ( nextBag, cmdList ) =
-            Dict.foldl initialPaintAccumulator ( Dict.empty, [] ) priv.bag
+            Dict.foldl openAlerts ( Dict.empty, [] ) priv.bag
     in
         ( State { priv | bag = nextBag }, Cmd.batch cmdList )
 

@@ -3,11 +3,11 @@
 <img alt="A CSS transition example" src="resources/TransitionsPrinciple.png" style="height: 150px; border: none;">
 
 <ol>
-<li class="fragment"><code style="background-color: moccasin">view</code> - paint <strong>initial</strong> values for properties
-<li class="fragment">Handle triggering event in <code style="background-color: moccasin">update</code> - change model state
-<li class="fragment"><code style="background-color: moccasin">view</code> - paint <strong>target</strong> values
-<li class="fragment">Handle <code style="background-color: moccasin">transitionend</code> in <code style="background-color: moccasin">update</code> - change model state
-<li class="fragment">Optionally change DOM again in <code style="background-color: moccasin">view</code>
+<li class="fragment"><code>view</code> - paint <strong>initial</strong> values for properties
+<li class="fragment">Handle triggering event in <code>update</code> - change model state
+<li class="fragment"><code>view</code> - paint <strong>target</strong> values
+<li class="fragment">Handle <code>transitionend</code> in <code>update</code> - change model state
+<li class="fragment">Optionally change DOM again in <code>view</code>
 </ol>
 
 note:

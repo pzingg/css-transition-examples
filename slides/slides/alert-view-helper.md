@@ -2,22 +2,20 @@
 
 ```elm
 wrapperStylesFor : Properties -> List ( String, String )
-wrapperStylesFor { visibility, summaryHeight, detailsHeight } =
+wrapperStylesFor { visibility, summaryHt, detailsHt } =
     case visibility of
         Summary ->
             [ ( "height"
-              , toString (summaryHeight + 10) ++ "px" ) ]
+              , toString (summaryHt + 10) ++ "px" ) ]
 
         Details ->
             [ ( "height"
-              , toString (summaryHeight + detailsHeight + 20) ++ "px" ) ]
+              , toString (summaryHt + detailsHt + 20) ++ "px" ) ]
 
         SummaryClosing ->
             [ ( "height", "0px" ) ]
 
-        DetailsClosing ->
-            [ ( "height", "0px" ) ]
-
+        ...
         _ ->
             []
 ```

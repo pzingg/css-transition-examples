@@ -50,13 +50,13 @@ body {
   word-wrap: break-word; }
 
 .reveal h1 {
-  font-size: 3.77em; }
-
-.reveal h2 {
   font-size: 2.11em; }
 
-.reveal h3 {
+.reveal h2 {
   font-size: 1.55em; }
+
+.reveal h3 {
+  font-size: 1em; }
 
 .reveal h4 {
   font-size: 1em; }
@@ -147,18 +147,22 @@ body {
   font-size: 0.55em;
   font-family: monospace;
   line-height: 1.2em;
-  word-wrap: break-word;
-  box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.3); }
+  word-wrap: break-word; }
 
 .reveal code {
-  font-family: monospace; }
+  font-family: monospace;
+  background-color: moccasin }
 
 .reveal pre code {
+  background-color: #fff;
   display: block;
   padding: 5px;
   overflow: auto;
-  max-height: 400px;
+  max-height: 450px;
   word-wrap: normal; }
+
+.reveal mark {
+  background-color: moccasin }
 
 .reveal table {
   margin: auto;

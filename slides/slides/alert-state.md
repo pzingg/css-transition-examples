@@ -1,26 +1,26 @@
 ##  Maintaining the Alert's state
 
-```elm
-type Visibility
+<pre class="fragment"><code class="elm">type Visibility
     = Hidden
     | Opening
     | Summary
     | Details
     | SummaryClosing
     | DetailsClosing
-```
+</code></pre>
 
-and
+<div class="fragment">
+The full set of properties:
 
-```elm
-type alias Properties =
+<pre><code class="elm">type alias Properties =
     { instanceId : Int
     , dismissal : Dismissal
     , visibility : Visibility
     , summaryHeight : Float
     , detailsHeight : Float
     }
-```
+</code></pre>
+</div>
 
 note:
     Put your speaker notes here.

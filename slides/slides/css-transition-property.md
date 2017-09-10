@@ -1,4 +1,4 @@
-##  The <code style="background-color: moccasin">transition:</code> property
+##  The <code>transition:</code> property
 
 <pre><code class="css">transition: &lt;property&gt; &lt;duration&gt; &lt;timing-function&gt; &lt;delay&gt;;
 </code></pre>

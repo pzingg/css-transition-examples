@@ -1,7 +1,7 @@
 ##  Topics that I'm covering today
 
 <ul>
-<li>A short dive into the CSS <code style="background-color: moccasin">transition:</code> property
+<li>A short dive into the CSS <code>transition:</code> property
 <li class="fragment">A few examples we used in our application
 <li class="fragment">Code walkthough for an animated "Alert" widget
 <li class="fragment">Using a custom DOM event and decoding it on the Elm side
