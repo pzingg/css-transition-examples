@@ -36,16 +36,15 @@
       // Embed Elm app and define ports
       var app = Elm.AlertExample.Main.embed(document.getElementById('root'));
 
-      // port openAlertNextFrame : String -> Cmd msg
-      // Version that does not rely on using Elm subscriptions
-      // Wait one paint cycle before calling dispatchAlertSizes,
-      // so that DOM is set up first.
-      app.ports.openAlertNextFrame.subscribe(function(domId) {
-          var boundFunction = dispatchAlertSizes.bind(null, domId);
-          window.requestAnimationFrame(boundFunction);
-      });
+      // port openAlertImmediate : String -> Cmd msg
+      // Version using Elm subscriptions
+      // We don't need to use requestAnimationFrame here, because
+      // this is called only after initial state has been painted.
+      app.ports.openAlertImmediate.subscribe(function(domId) {
+          dispatchAlertSizes(domId);
+      }
 
-      // Dispatch a DOM custom event for Elm to handle
+      // Dispatch a DOM custom event for Elm to handle.
       function dispatchAlertSizes(domId) {
           var wrapper = document.getElementById(domId);
           if (wrapper == null) {

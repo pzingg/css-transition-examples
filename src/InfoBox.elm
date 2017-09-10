@@ -59,7 +59,7 @@ import Json.Decode as Json exposing (Decoder, field)
 
 {-| Configuration record for fully specifying an info box.
 
-  - `domId` must be a valid DOM id string, applied to an info box's header
+  - `domId` must be a valid DOM Id string, applied to an info box's header
     element; the id string must be unique for each info box used in the parent's model
   - `tagName` should be a "header" tag element type, such as "h2", "h3", "h4";
     the tag type will be appled to the header text.

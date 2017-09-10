@@ -1,4 +1,4 @@
-port module Alert
+port module AlertWithSub
     exposing
         ( Severity(..)
         , Dismissal(..)
@@ -12,7 +12,8 @@ port module Alert
         , dismiss
         , update
         , view
-        , openAlertNextFrame
+        , subscriptions
+        , openAlertImmediate
         , scrollToTop
         )
 
@@ -54,6 +55,7 @@ user can choose to expand if available.
 
 -}
 
+import AnimationFrame
 import Dict exposing (Dict)
 import Html exposing (Html, node, text, div, span, label, button)
 import Html.Attributes exposing (attribute, id, class, classList, type_, style)
@@ -109,6 +111,7 @@ type alias Config =
 -}
 type Visibility
     = Hidden
+    | InitialPaint
     | Opening
     | Summary
     | Details
@@ -169,6 +172,11 @@ init =
 
 {-| Set an Alert's visibility to `Opening`, record a new `instanceId`, and
 call `openAlertNextFrame` to detect the heights of the Alert's content wells.
+
+In this version that uses subscriptions, we set the visibility to InitialPaint,
+and delay calling openAlertImmediate port until the InitialPainted msg has been
+received in our update function.
+
 -}
 open : Config -> State -> ( State, Cmd msg )
 open { domId, dismissal } ((State priv) as state) =
@@ -182,14 +190,14 @@ open { domId, dismissal } ((State priv) as state) =
                     { props
                         | instanceId = instanceId
                         , dismissal = dismissal
-                        , visibility = Opening
+                        , visibility = InitialPaint
                         , summaryHeight = 0
                         , detailsHeight = 0
                     }
                 )
                 (State { priv | currentId = instanceId })
     in
-        ( nextState, Cmd.batch [ openAlertNextFrame domId, scrollToTop () ] )
+        ( nextState, Cmd.none )
 
 
 {-| Click an Alert's close button programmatically.
@@ -211,6 +219,7 @@ dismiss domId state =
 -}
 type Msg
     = Resized String Dismissal Float Float
+    | InitialPainted Time
     | DetailsClicked String
     | CloseClicked String
     | TransitionEnd String String
@@ -230,6 +239,13 @@ DOM `tranistionend` events return a `TransitionEnded` `OutMsg`.
 update : Msg -> State -> ( State, Cmd Msg, Maybe OutMsg )
 update msg state =
     case msg of
+        InitialPainted _ ->
+            let
+                ( nextState, cmds ) =
+                    initialPainted state
+            in
+                ( nextState, cmds, Nothing )
+
         Resized domId dismissal summaryHeight detailsHeight ->
             let
                 ( nextState, props ) =
@@ -287,6 +303,31 @@ dismissalCmd domId dismissal state =
 
             _ ->
                 Cmd.none
+
+
+{-| Receiving an `InitialPainted` message means that one or more alerts
+have now been painted on the VDOM, so we can now safely dispatch the `alertSizes`
+custom DOM event using the `openAlertImmediate` port. We also update the
+visibility of these alerts to `Opening`, so that the `InitialPainted`
+subscription can be removed.
+-}
+initialPainted : State -> ( State, Cmd Msg )
+initialPainted (State priv) =
+    let
+        initialPaintAccumulator domId props ( dictProps, xsCmds ) =
+            case props.visibility of
+                InitialPaint ->
+                    ( Dict.insert domId { props | visibility = Opening } dictProps
+                    , (openAlertImmediate domId) :: xsCmds
+                    )
+
+                _ ->
+                    ( Dict.insert domId props dictProps, xsCmds )
+
+        ( nextBag, cmdList ) =
+            Dict.foldl initialPaintAccumulator ( Dict.empty, [] ) priv.bag
+    in
+        ( State { priv | bag = nextBag }, Cmd.batch cmdList )
 
 
 resized : String -> Float -> Float -> State -> ( State, Properties )
@@ -434,15 +475,35 @@ removeTimer dismissal =
 
 
 
+-- SUBSCRIPTIONS
+
+
+{-| Set up a subscription if any of the alerts have the InitialPaint visibility.
+-}
+subscriptions : State -> Sub Msg
+subscriptions (State priv) =
+    let
+        initialPaintFilter _ props =
+            props.visibility == InitialPaint
+    in
+        case Dict.filter initialPaintFilter priv.bag |> Dict.isEmpty of
+            False ->
+                AnimationFrame.times InitialPainted
+
+            True ->
+                Sub.none
+
+
+
 -- PORTS
 
 
 {-| JavaScript port that simply dispatches an `alertSizes` CustomEvent
 on the element with the specified DOM Id. The version in this example
-uses `requestAnimationFrame` to delay the dispatch for one animation cycle,
-in order to allow the initial state to be painted on the VDOM.
+does not use `requestAnimationFrame`, since the port is called only
+after the initial state has been painted.
 -}
-port openAlertNextFrame : String -> Cmd msg
+port openAlertImmediate : String -> Cmd msg
 
 
 {-| JavaScript port that uses CSSOM smooth scrolling behavior.
@@ -458,7 +519,7 @@ port scrollToTop : () -> Cmd msg
 Handles DOM events:
 
   - `click` on close and details elements
-  - `alertSizes` event sent via the `openAlertNextFrame` port
+  - `alertSizes` event sent via the `openAlertImmediate` port
   - `transitionend` event dispatched when CSS transition is finished
 
 -}

@@ -1,10 +1,10 @@
-module AlertExample.Main exposing (main)
+module AlertWithSubExample.Main exposing (main)
 
 import Html exposing (Html, program, text, div, h1, h2, h3, h4, a, p, nav, ul, li)
 import Html.Attributes exposing (attribute, class, style, href)
 import Html.Events exposing (onClick)
 import Time
-import Alert exposing (..)
+import AlertWithSub exposing (..)
 
 
 -- MODEL
@@ -202,8 +202,9 @@ view model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
+subscriptions model =
+    AlertWithSub.subscriptions model.alerts
+        |> Sub.map AlertMsg
 
 
 

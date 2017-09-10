@@ -1,0 +1,9 @@
+{
+  "generator-reveal": {
+    "presentationTitle": "Activate Your Interface with CSS Animation",
+    "packageVersion": "0.1.0",
+    "revealTheme": "simple",
+    "useSass": false,
+    "deployToGithubPages": false
+  }
+}

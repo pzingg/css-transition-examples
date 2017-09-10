@@ -540,7 +540,7 @@ carouselItemClasses route model =
             ]
 
 
-{-| Send a message some time in the future.
+{-| Use Process.sleep Task to send a message some time in the future.
 -}
 delay : Time -> msg -> Cmd msg
 delay time msg =

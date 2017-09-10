@@ -1,0 +1,21 @@
+{
+  "name": "activate-your-interface-with-css-animation",
+  "version": "0.1.0",
+  "private": true,
+  "devDependencies": {
+    "grunt": "^1.0.0",
+    "grunt-contrib-connect": "^1.0.2",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-contrib-copy": "^1.0.0",
+    "grunt-contrib-jshint": "^1.1.0",
+    "load-grunt-tasks": "^3.5.2", 
+    "grunt-coffeelint": "0.0.16",
+    "coffeelint": "^1.16.0"
+  },
+  "engines": {
+    "node": ">=4"
+  },
+  "scripts": {
+    "test": "grunt test"
+  }
+}
