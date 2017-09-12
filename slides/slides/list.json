@@ -13,7 +13,6 @@
     "css-transition-cycle-in-elm.md",
     "demo-time.md",
     "alert-recipe.md",
-    "alert-state.md",
     {
         "filename": "alert-html-1.html",
         "attr": {
@@ -44,17 +43,20 @@
             "data-transition": "fade-in slide-out"
         }
     },
+    "alert-state.md",
     "alert-custom-dom-event.md",
     "summary-height-decoder.md",
     "details-height-decoder.md",
-    "resize-handler.md",
+    "resize-handler-1.md",
+    "resize-handler-2.md",
     "alert-view-helper.md",
     "alert-view-function.md",
     "alert-update-function.md",
     "infobox-and-page-transition-examples.md",
-    "initial-state-timing.md",
+    "timing-is-everything.md",
     "initial-paint-subscription.md",
     "handling-initial-painted.md",
+    "process-sleep-task.md",
     "other-elm-animation-packages.md",
     "thank-you.md"
 ]

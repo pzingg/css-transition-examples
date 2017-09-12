@@ -1,6 +1,6 @@
 ##  Maintaining the Alert's state
 
-<pre class="fragment"><code class="elm">type Visibility
+<pre><code class="elm">type Visibility
     = Hidden
     | Opening
     | Summary
@@ -23,5 +23,9 @@ The full set of properties:
 </div>
 
 note:
-    Put your speaker notes here.
-    You can see them pressing 's'.
+* Here you can see our visibility type with tags representing the different possible visibilities
+for the widget
+* And here is the type alias for the full set of properties we need to maintain
+for each alert widget. It includes a few other values that must be set and read dynamically.
+* Specifically we will be obtaining the (initially hidden) height of the content areas
+we will be animating, so we keep them in the properties record.

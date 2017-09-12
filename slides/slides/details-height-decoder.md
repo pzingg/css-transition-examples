@@ -14,5 +14,5 @@ detailsHeightDecoder =
 ```
 
 note:
-    Here's another decoder to get the offsetHeight of the details element from the same alertSizes event.
-    It has to walk through three descendant elements.
+* We'll need to write another Json decoder to get the <code>offsetHeight</code> of the details element from the same "alertSizes" event.
+* It has to walk through three descendant elements before getting the <code>offsetHeight</code> value.

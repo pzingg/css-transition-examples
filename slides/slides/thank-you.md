@@ -10,7 +10,3 @@ Keep growing the Elm community!
 </ul>
 
 Find me, @pzingg, on Twitter, GitHub, elmlang.slack.com, and here at the conference
-
-note:
-    Put your speaker notes here.
-    You can see them pressing 's'.

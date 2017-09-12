@@ -1,4 +1,4 @@
-##  CSS transition cycle in Elm
+##  The CSS transition cycle in Elm
 
 <img alt="A CSS transition example" src="resources/TransitionsPrinciple.png" style="height: 150px; border: none;">
 

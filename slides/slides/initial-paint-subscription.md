@@ -16,5 +16,6 @@ subscriptions (State priv) =
 ```
 
 note:
-    For alerts in the InitalPaint visibility state, AnimationFrame.times Sub will send an InitialPainted message
-        on each cycle
+* Here's the subscription code that we could have used for the alert example
+* If we are waiting for the view to be painted on any of our alerts, we set up a subscription
+that will send us an <code>InitialPainted</code> message using the <code>AnimationFrame.times</code> function.

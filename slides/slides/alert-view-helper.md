@@ -1,7 +1,6 @@
 ##  Elm `view` helper
 
-```elm
-wrapperStylesFor : Properties -> List ( String, String )
+<pre class="fragment"><code class="elm" data-trim data-noescape>wrapperStylesFor : Properties -> List ( String, String )
 wrapperStylesFor { visibility, summaryHt, detailsHt } =
     case visibility of
         Summary ->
@@ -18,8 +17,11 @@ wrapperStylesFor { visibility, summaryHt, detailsHt } =
         ...
         _ ->
             []
-```
+</code></pre>
 
 note:
-    Put your speaker notes here.
-    You can see them pressing 's'.
+* Now that we have the heights we need, we can use a few helper functions to set the initial and target values for our
+animations.
+* Depending on the visibility state, we'll set the height value for the outermost wrapper as either zero,
+the height of just the summary content (with padding), or the combined height of the summary and details contents.
+* Here's an example.

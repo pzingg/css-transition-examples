@@ -11,5 +11,4 @@ resizeHandler domId dismissal =
 </code></pre>
 
 note:
-    Now that we have the two decoders we can use Json.Decode.map2 to combine the results of decoding the
-    alertSizes DOM event, and then package the height values into a `Resized` Elm message
+* Then, we package the height values and anything else we need into a `Resized` Elm message

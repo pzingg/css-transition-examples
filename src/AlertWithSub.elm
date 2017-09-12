@@ -647,8 +647,8 @@ detailsStylesFor { visibility, detailsHeight } =
 {-| Decode the height of the summary content element, which is the first
 child of the wrapper element that dispatched the `alertSizes` event.
 -}
-wrapperHeightDecoder : Decoder Float
-wrapperHeightDecoder =
+summaryHeightDecoder : Decoder Float
+summaryHeightDecoder =
     Json.at
         [ "target"
         , "firstChild"
@@ -679,7 +679,7 @@ into a "Resized" Alert.Msg value.
 -}
 resizeHandler : String -> Dismissal -> Decoder Msg
 resizeHandler domId dismissal =
-    Json.map2 (,) wrapperHeightDecoder detailsHeightDecoder
+    Json.map2 (,) summaryHeightDecoder detailsHeightDecoder
         |> Json.andThen
             (\( summaryHeight, detailsHeight ) ->
                 Resized domId dismissal summaryHeight detailsHeight

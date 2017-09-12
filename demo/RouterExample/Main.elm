@@ -347,8 +347,8 @@ view model =
 
         ( buttonText, buttonMsg ) =
             case ( singleton, model.transition ) of
-                ( False, RouteAccepted transNext ) ->
-                    ( "Start Transition", TransitionStart transNext )
+                ( False, RouteAccepted nextRoute ) ->
+                    ( "Start Transition", TransitionStart nextRoute )
 
                 _ ->
                     ( "Nothing to do", NoOp )
@@ -499,6 +499,25 @@ pageInfo i route model =
         ]
 
 
+{-| Determine the whether the class name applied to the carousel item for the
+specified route will be "active", "next", and/or "left", depending on the transition state.
+-}
+carouselItemHelper : Route -> Model -> ( Bool, Bool, Bool )
+carouselItemHelper route model =
+    case ( model.next == Nothing, model.transition ) of
+        ( False, RouteAccepted nextRoute ) ->
+            ( route == activeRoute model, route == nextRoute, False )
+
+        ( False, InTransition nextRoute ) ->
+            ( route == activeRoute model, route == nextRoute, True )
+
+        ( False, TransitionEnded nextRoute ) ->
+            ( route == nextRoute, route == activeRoute model, False )
+
+        _ ->
+            ( route == activeRoute model, False, False )
+
+
 {-| Calculate the DOM classes for a carousel item, based on the tranistion state and whether the route is
 the current "active" route (the route the application is transitioning from), or the "next" route
 (the route the application is transitioning to), or the case where there is no "next" route (after the
@@ -507,22 +526,8 @@ transition is finished).
 carouselItemClasses : Route -> Model -> String
 carouselItemClasses route model =
     let
-        singleton =
-            model.next == Nothing
-
-        ( active, next, direction ) =
-            case ( singleton, model.transition ) of
-                ( False, RouteAccepted transNext ) ->
-                    ( route == activeRoute model, route == transNext, False )
-
-                ( False, InTransition transNext ) ->
-                    ( route == activeRoute model, route == transNext, True )
-
-                ( False, TransitionEnded transNext ) ->
-                    ( route == transNext, route == activeRoute model, False )
-
-                _ ->
-                    ( route == activeRoute model, False, False )
+        ( isActive, isNext, isLeft ) =
+            carouselItemHelper route model
 
         -- Borrowed from Html.classList.
         -- Given a list of tuples of ( String, Bool ), join the strings for which the boolean is True.
@@ -534,9 +539,9 @@ carouselItemClasses route model =
     in
         itemClasses
             [ ( "item spa-page-item", True )
-            , ( "active", active )
-            , ( "next", next )
-            , ( "left", direction )
+            , ( "active", isActive )
+            , ( "next", isNext )
+            , ( "left", isLeft )
             ]
 
 
