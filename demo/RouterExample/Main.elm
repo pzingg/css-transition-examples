@@ -131,11 +131,17 @@ type Msg
 -- INIT
 
 
+{-| Flags passed into our application from JavaScript at startup
+-}
+type alias Flags =
+    { randSeed : Int }
+
+
 {-| Parse the initial location (or default to `HomeRoute`), and create the `routes` Array and initial
 `active` and `next` route pointers.
 -}
-init : Navigation.Location -> ( Model, Cmd Msg )
-init location =
+init : Flags -> Navigation.Location -> ( Model, Cmd Msg )
+init flags location =
     let
         initialRoute =
             case parseLocation location of
@@ -149,7 +155,7 @@ init location =
                     route
 
         quotes =
-            Quotes.init 12345
+            Quotes.init <| Debug.log "randSeed" flags.randSeed
 
         initialPage =
             Quotes.get quotes
@@ -543,7 +549,7 @@ navbar model =
                     ]
                 , li [ attribute "role" "presentation" ]
                     [ a [ href "http://localhost:9000/#/9" ]
-                        [ text "Slides" ]
+                        [ text "Back to Slides" ]
                     ]
                 ]
             ]
@@ -723,9 +729,9 @@ subscriptions model =
     Sub.none
 
 
-main : Program Never Model Msg
+main : Program Flags Model Msg
 main =
-    Navigation.program OnLocationChange
+    Navigation.programWithFlags OnLocationChange
         { init = init
         , view = view
         , update = update

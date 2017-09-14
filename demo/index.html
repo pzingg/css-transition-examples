@@ -40,7 +40,11 @@
       <script src="RouterExample/elm.js"></script>
       <script>
         // Embed Elm app and define ports
-        var app = Elm.RouterExample.Main.embed(document.getElementById('root'));
+        var root = document.getElementById('root');
+        var app = Elm.RouterExample.Main.embed(
+            root,
+            { randSeed: Math.floor(Math.random() * 0xFFFFFFFF) }
+        );
 
         // port openAlertNextFrame : String -> Cmd msg
         // Version that does not rely on using Elm subscriptions
