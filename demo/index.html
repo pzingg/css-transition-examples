@@ -37,14 +37,19 @@
       <!-- polyfill for scroll-behavior -->
       <script src="js/smoothscroll.js"></script>
 
-      <script src="RouterExample/elm.js"></script>
+      <!-- Compliled Elm application code -->
+      <!-- Use "elm-live --output=TransitionsDemo/elm.js TransitionsDemo/Main.elm" -->
+      <script src="TransitionsDemo/elm.js"></script>
       <script>
-        // Embed Elm app and define ports
-        var root = document.getElementById('root');
-        var app = Elm.RouterExample.Main.embed(
-            root,
+        // Embed Elm app
+
+        // Get a random number and pass it to the Elm app flags
+        var app = Elm.TransitionsDemo.Main.embed(
+            document.getElementById('root'),
             { randSeed: Math.floor(Math.random() * 0xFFFFFFFF) }
         );
+
+        // Elm ports
 
         // port openAlertNextFrame : String -> Cmd msg
         // Version that does not rely on using Elm subscriptions

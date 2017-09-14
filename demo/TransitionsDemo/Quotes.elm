@@ -1,4 +1,4 @@
-module RouterExample.Quotes exposing (Quote, Model, init, get, next, defaultQuote, errorQuote)
+module TransitionsDemo.Quotes exposing (Quote, Model, init, get, next, defaultQuote, errorQuote)
 
 import Array exposing (Array)
 import Random

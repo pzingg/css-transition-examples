@@ -1,7 +1,7 @@
-port module RouterExample.Main exposing (main)
+port module TransitionsDemo.Main exposing (main)
 
-{-| RouterExample.Main.elm: A simple single file Elm SPA application demonstrating three different
-CSS transition user interfaces:
+{-| The application is a simple Elm SPA demonstrating three different CSS transition user
+interfaces:
 
 1.  Alert widget that is initially closed, but opens with animation when called programmatically.
 2.  Info box widget that expands when an element is clicked.
@@ -33,7 +33,7 @@ import Navigation
 import UrlParser
 import Alert exposing (..)
 import InfoBox
-import RouterExample.Quotes as Quotes
+import TransitionsDemo.Quotes as Quotes
 
 
 -- MODEL
