@@ -8,6 +8,7 @@ Start the dev server with `elm-live  --debug --pushstate --output=TransitionsDem
 
 Then navigate to `http://localhost:8000/`.
 
+
 ### Application Notes
 
 The application is a simple Elm SPA demonstrating three different CSS transition user interfaces:
