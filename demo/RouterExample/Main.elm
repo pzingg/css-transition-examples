@@ -1,12 +1,23 @@
 port module RouterExample.Main exposing (main)
 
-{-| RouterExample.Main.elm: A simple single file Elm SPA application demonstrating how to adapt Bootstrap's Carousel component
-to demonstrate "router transition" animations in pure Elm and CSS. No JavaScript is required for the animation, but we do
-use one JavaScript port that kickstarts the resizing of carousel items just before the CSS transition transform is set.
+{-| RouterExample.Main.elm: A simple single file Elm SPA application demonstrating three different
+CSS transition user interfaces:
+
+1.  Alert widget that is initially closed, but opens with animation when called programmatically.
+2.  Info box widget that expands when an element is clicked.
+3.  A router transition effect, adapted from Bootstrap's Carousel component, that slides page
+    content in from the right when the active route is changed.
+
+No JavaScript is required for the animations themselves, but we do use some JavaScript ports:
+
+1.  When we want to open an alert, we call a port that dispatches a custom DOM event so that we can
+    find out the height of the content we'll be expanding.
+2.  Before we start the router transition animation, we call a port that gets the offsetWidth of
+    the content that will be animated directly.
 
 The application itself is expanded from this example: <https://github.com/sporto/elm-navigation-pushstate>
 
-The host HTML file that loads the JavaScript ports and the required Bootstrap CSS is page_spa.html.
+The host HTML file that loads the JavaScript ports and the required Bootstrap CSS is index.html.
 
 -}
 
@@ -28,27 +39,21 @@ import RouterExample.Quotes as Quotes
 -- MODEL
 
 
-{-| Where we are in the CSS transition. We have to call the `view` function once the route is accepted, but
-before the transition is actually started.
--}
-type Transition
-    = NotStarted
-    | RouteAccepted Route
-    | InTransition Route
-    | TransitionEnded Route
-
-
-type alias Page =
-    Quotes.Quote
-
-
 {-| Application state.
 
-  - `routes` is an Array of constant size 2, to hold the current route and the (optional) route we are transitioning to.
+  - `alerts` is the opaque state of all alerts in the application (see the Alert module for more
+    information).
+  - `alertConfigIndex` just holds an integer to cycle through the different alert types.
+  - `infoBoxes` is the opaque state of all info boexs in the application (see the InfoBox module
+    for more information).
+  - `routes` is an Array of constant size 2, to hold the current route and the (optional) route
+    we are transitioning to.
   - `activeRouteIndex` holds the Array index of the current active route
-  - `nextRouteIndex` holds the Array index of the route we are transitioning to. It is set to `Nothing` initially
-    and is reset to `Nothing` after a route transition has been completed.
+  - `nextRouteIndex` holds the Array index of the route we are transitioning to. It is set to
+    `Nothing` initially and is reset to `Nothing` after a route transition has been completed.
   - `routerTansition` holds the phase of the CSS transition.
+  - `pages` is a parallel Array to `routes`. Each member of the Array holds a quote.
+  - `quotes` is our random quote generation system.
 
 -}
 type alias Model =
@@ -63,7 +68,7 @@ type alias Model =
     , routes : Array Route
     , activeRouteIndex : Int
     , nextRouteIndex : Maybe Int
-    , routerTransition : Transition
+    , routerTransition : RouterTransition
 
     -- content
     , pages : Array Page
@@ -71,33 +76,21 @@ type alias Model =
     }
 
 
-{-| Accessor function to return the currently active route, or NoRoute if there is no active route
-(which should never happen).
+{-| In a real application the page content would be dynamically created, here we just use a pair
+of Strings from a quotation database as the content.
 -}
-getActiveRoute : Model -> Route
-getActiveRoute model =
-    Array.get model.activeRouteIndex model.routes
-        |> Maybe.withDefault NoRoute
+type alias Page =
+    Quotes.Quote
 
 
-{-| Accessor function to return the route we are transitioning to, or NoRoute if there is no route
-to transition to (such as at `init` time).
+{-| Where we are in the CSS router transition. We have to call the `view` function once the route
+is accepted, but before the transition is actually started.
 -}
-getNextRoute : Model -> Route
-getNextRoute model =
-    model.nextRouteIndex
-        |> Maybe.andThen
-            (\i ->
-                Array.get i model.routes
-            )
-        |> Maybe.withDefault NoRoute
-
-
-{-| Accessor function that returns True if only the active route is loaded into the routes array.
--}
-noNextRoute : Model -> Bool
-noNextRoute model =
-    model.nextRouteIndex == Nothing
+type RouterTransition
+    = NotStarted
+    | RouteAccepted Route
+    | InTransition Route
+    | TransitionEnded Route
 
 
 
@@ -106,10 +99,22 @@ noNextRoute model =
 
 {-| Messages.
 
+Messages for manipulating alerts:
+
+  - `ShowAlert` will be used to show one of the four example alert configurations
+  - `DismissAlert` will be used to dismiss that configurations
+  - `AlertMsg` is a sub-message to be dispatched to the Alert module's `update` function
+
+Messages for manipulating info boxes:
+
+  - `InfoBoxMsg` is a sub-message to be dispatched to the InfoBox module's `update` function
+
+Messages for handling SPA navigation and animating the router transitions:
+
   - `ChangeLocation` will be used for initiating a url change
   - `OnLocationChange` will be triggered after a location change
-  - `TransitionStart` is triggered to start the animation
-  - `TransitionEnd` is triggered by DOM `tranistionend` event
+  - `RouterTransitionStart` is triggered to start the animation
+  - `RouterTransitionEnd` is triggered by DOM `tranistionend` event
 
 -}
 type Msg
@@ -123,22 +128,23 @@ type Msg
       -- router transition messages
     | ChangeLocation String
     | OnLocationChange Navigation.Location
-    | TransitionStart Route
-    | TransitionEnd Route
+    | RouterTransitionStart Route
+    | RouterTransitionEnd Route
 
 
 
 -- INIT
 
 
-{-| Flags passed into our application from JavaScript at startup
+{-| Flags passed into our application from JavaScript at startup. We import a random number
+seed for the random quote generator.
 -}
 type alias Flags =
     { randSeed : Int }
 
 
-{-| Parse the initial location (or default to `HomeRoute`), and create the `routes` Array and initial
-`active` and `next` route pointers.
+{-| Parse the initial location (or default to `HomeRoute`), and create the `routes` Array and
+initial `active` and `next` route pointers.
 -}
 init : Flags -> Navigation.Location -> ( Model, Cmd Msg )
 init flags location =
@@ -243,6 +249,35 @@ aboutPath =
     "#/about"
 
 
+{-| Accessor function to return the currently active route, or NoRoute if there is no active route
+(which should never happen).
+-}
+getActiveRoute : Model -> Route
+getActiveRoute model =
+    Array.get model.activeRouteIndex model.routes
+        |> Maybe.withDefault NoRoute
+
+
+{-| Accessor function to return the route we are transitioning to, or NoRoute if there is no route
+to transition to (such as at `init` time).
+-}
+getNextRoute : Model -> Route
+getNextRoute model =
+    model.nextRouteIndex
+        |> Maybe.andThen
+            (\i ->
+                Array.get i model.routes
+            )
+        |> Maybe.withDefault NoRoute
+
+
+{-| Accessor function that returns True if only the active route is loaded into the routes array.
+-}
+noNextRoute : Model -> Bool
+noNextRoute model =
+    model.nextRouteIndex == Nothing
+
+
 
 -- UPDATE
 
@@ -252,14 +287,14 @@ changes with an empty ("") hash component every time the update / view loop exec
 `NoHashRoute` that we will ignore.
 
 For any incoming route that is different than the active route, we store the new route in the Model as the `next` route,
-and set a timer to send a `TransitionStart` message to start the carousel transition after the carousel items are
+and set a timer to send a `RouterTransitionStart` message to start the carousel transition after the carousel items are
 set up in the view cycle and are ready for the CSS transitions.
 
 -}
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        -- alert messages
+        -- Alert UI messages
         ShowAlert i ->
             let
                 config =
@@ -280,6 +315,8 @@ update msg model =
             in
                 ( { model | alerts = nextState }, alertCmd )
 
+        -- Alert sub-messages
+        -- Just pass them to the Alert.update function
         AlertMsg subMsg ->
             let
                 ( nextState, subCmd, maybeMsg ) =
@@ -303,7 +340,8 @@ update msg model =
                         in
                             ( nextModel, Cmd.map AlertMsg subCmd )
 
-        -- info box messages
+        -- Info box sub-messages
+        -- Just pass them to the InfoBox.update function
         InfoBoxMsg subMsg ->
             let
                 ( nextState, maybeMsg ) =
@@ -326,30 +364,32 @@ update msg model =
                         in
                             ( nextModel, Cmd.none )
 
-        -- router transition messages
+        -- Navigation messages
+        -- Change the browser history when location changes.
         ChangeLocation hash ->
             ( model, changeLocation hash )
 
+        -- When location was changed, see if we can navigate to new route.
+        -- If valid, change to a new page on that route.
         OnLocationChange location ->
             let
                 newRoute =
                     parseLocation location
                         |> Maybe.withDefault NotFoundRoute
-
-                activeRoute =
-                    getActiveRoute model
             in
-                case model.routerTransition == NotStarted && newRoute /= NoHashRoute && newRoute /= activeRoute of
+                case
+                    (model.routerTransition == NotStarted)
+                        && (newRoute /= NoHashRoute)
+                        && (newRoute /= getActiveRoute model)
+                of
                     True ->
-                        ( { model | routerTransition = RouteAccepted newRoute, quotes = Quotes.next model.quotes }
-                            |> pushNextRoute newRoute
-                        , delay (200 * Time.millisecond) (TransitionStart newRoute)
-                        )
+                        pageChange newRoute model
 
                     _ ->
                         ( model, Cmd.none )
 
-        TransitionStart route ->
+        -- Router transition messages
+        RouterTransitionStart route ->
             case route of
                 NoRoute ->
                     ( model, Cmd.none )
@@ -359,22 +399,62 @@ update msg model =
                     , forceReflow ()
                     )
 
-        TransitionEnd route ->
+        RouterTransitionEnd route ->
             let
                 nextModel =
                     { model | routerTransition = TransitionEnded route }
                         |> makeNextRouteActive
                         |> resetTransition
             in
-                ( nextModel
-                , getActiveRoute nextModel
-                    |> changeRoute
-                )
+                ( nextModel, changeLocationToActiveRoute nextModel )
 
         NoOp ->
             ( model, Cmd.none )
 
 
+
+-- ROUTING TRANSITION HELPERS
+
+
+{-| Update the browser history when a new location URL is received.
+-}
+changeLocation : String -> Cmd msg
+changeLocation hash =
+    Navigation.newUrl hash
+
+
+{-| After transition is ended, update the browser history to the new active route.
+-}
+changeLocationToActiveRoute : Model -> Cmd msg
+changeLocationToActiveRoute model =
+    case getActiveRoute model |> pathForRoute of
+        Just hash ->
+            changeLocation hash
+
+        Nothing ->
+            Cmd.none
+
+
+{-| We are change pages. Dismiss any alerts, start the rotuer transition, generate
+some new content, and then call pushNextRoute to set up the routes and pages
+arrays.
+-}
+pageChange : Route -> Model -> ( Model, Cmd Msg )
+pageChange newRoute model =
+    ( { model
+        | alerts = Alert.pageChangeDismiss model.alerts
+        , routerTransition = RouteAccepted newRoute
+        , quotes = Quotes.next model.quotes
+      }
+        |> pushNextRoute newRoute
+    , delay (200 * Time.millisecond) (RouterTransitionStart newRoute)
+    )
+
+
+{-| The active route and next route, and the content for the corresponding active and next pages,
+are kept in arrays of size 2. Load the next route and its page content into the currently inactive
+slot in the respective arrays.
+-}
 pushNextRoute : Route -> Model -> Model
 pushNextRoute route model =
     let
@@ -400,6 +480,9 @@ pushNextRoute route model =
         }
 
 
+{-| After the router transition is done, we switch the active route to what was the next route,
+and set the nextRouteIndex to Nothing (meaning we only have one route again).
+-}
 makeNextRouteActive : Model -> Model
 makeNextRouteActive model =
     let
@@ -410,34 +493,19 @@ makeNextRouteActive model =
         { model | activeRouteIndex = activeIndex, nextRouteIndex = Nothing }
 
 
+{-| Set transition back to starting point.
+-}
 resetTransition : Model -> Model
 resetTransition model =
     { model | routerTransition = NotStarted }
-
-
-changeRoute : Route -> Cmd Msg
-changeRoute route =
-    let
-        hash =
-            pathForRoute route
-    in
-        case hash of
-            Just h ->
-                changeLocation h
-
-            Nothing ->
-                Cmd.none
-
-
-changeLocation : String -> Cmd Msg
-changeLocation hash =
-    Navigation.newUrl hash
 
 
 
 -- VIEW
 
 
+{-| Four different example alert configurations, with different severities, dismissal types, etc.
+-}
 alertConfig : Int -> Alert.Config
 alertConfig i =
     case i % 4 of
@@ -468,12 +536,14 @@ alertConfig i =
         _ ->
             { domId = "my-alert"
             , severity = Info
-            , dismissal = DismissAfter (5 * Time.second)
-            , summary = "You just clicked something. Hurray!"
+            , dismissal = DismissOnPageChange
+            , summary = "This informational alert should vanish on page change!"
             , details = Just "And you expanded the details content. Double hurray!"
             }
 
 
+{-| Example configuration for an info box
+-}
 infoBoxConfig : InfoBox.Config
 infoBoxConfig =
     { domId = "ib-example"
@@ -494,10 +564,11 @@ infoBoxConfig =
     }
 
 
-{-| Our view is based on the Bootstrap "Jumbotron" template, with:
+{-| Our view is based on a Bootstrap template, with:
 
-    - a navbar
-    - a Carousel in which we animate router transitions
+    - a navbar.
+    - an alert (initially hidden).
+    - a Carousel in which we animate router transitions. Each carousel item holds page content.
 
 -}
 view : Model -> Html Msg
@@ -555,8 +626,8 @@ navbar model =
             ]
 
 
-{-| When clicking a link we want to prevent the default browser behaviour which is to load a new page.
-So we use `onWithOptions` instead of `onClick`.
+{-| When clicking a link we want to prevent the default browser behaviour which is to load a
+new page. So we use `onWithOptions` instead of `onClick`.
 -}
 onLinkClick : msg -> Attribute msg
 onLinkClick message =
@@ -569,8 +640,8 @@ onLinkClick message =
         onWithOptions "click" options (Json.succeed message)
 
 
-{-| Generate the HTML for a Bootstrap Carousel container. `carouselItems` is an indexed list of the content
-that will be displayed for each carousel item.
+{-| Generate the HTML for a Bootstrap Carousel container. `carouselItems` is an indexed list
+of the content that will be displayed for each carousel item.
 -}
 carousel : List (Html Msg) -> Html Msg
 carousel carouselItems =
@@ -590,14 +661,15 @@ carouselItem i route model =
             [ class <| carouselItemClasses route model
             , onWithOptions "transitionend"
                 { stopPropagation = True, preventDefault = True }
-                (Json.succeed <| TransitionEnd (getNextRoute model))
+                (Json.succeed <| RouterTransitionEnd (getNextRoute model))
             ]
             [ div [ class "row" ]
                 [ div [ class "col-lg-12" ] content ]
             ]
 
 
-{-| Sample content for a page. Obviously a real application would have different `page` functions for each route.
+{-| Sample content for a page. Obviously a real application would have different `page`
+functions for each route.
 -}
 getPageContent : Int -> Route -> Model -> List (Html Msg)
 getPageContent i route model =

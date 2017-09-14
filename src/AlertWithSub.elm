@@ -10,6 +10,7 @@ port module AlertWithSub
         , init
         , open
         , dismiss
+        , pageChangeDismiss
         , update
         , view
         , subscriptions
@@ -209,6 +210,28 @@ dismiss domId state =
             closeClicked domId state
     in
         ( nextState, Cmd.none )
+
+
+{-| Dismiss all the open alerts that have `DismissOnPageChange`.
+-}
+pageChangeDismiss : State -> State
+pageChangeDismiss (State priv) =
+    let
+        dismissAlerts domId props bag =
+            case ( props.dismissal, props.visibility ) of
+                ( DismissOnPageChange, Details ) ->
+                    Dict.insert domId { props | visibility = DetailsClosing } bag
+
+                ( DismissOnPageChange, Summary ) ->
+                    Dict.insert domId { props | visibility = SummaryClosing } bag
+
+                _ ->
+                    Dict.insert domId props bag
+
+        nextBag =
+            Dict.foldl dismissAlerts Dict.empty priv.bag
+    in
+        State { priv | bag = nextBag }
 
 
 
