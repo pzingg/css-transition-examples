@@ -9,13 +9,19 @@
     <meta name="author" content="">
     <link rel="icon" href="../../favicon.ico">
 
-    <title>Narrow Jumbotron Template for Bootstrap</title>
+    <title>CSS Transitions in Elm</title>
 
     <!-- Bootstrap core CSS -->
     <link href="bootstrap-dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom styles for this template -->
     <link href="css/jumbotron-narrow.css" rel="stylesheet">
+
+    <!-- Custom styles for the alert example -->
+    <link href="css/alert.css" rel="stylesheet">
+
+    <!-- Custom styles for the info box example -->
+    <link href="css/infobox.css" rel="stylesheet">
 
     <!-- Custom styles for the router carousel example -->
     <link href="css/router.css" rel="stylesheet">
@@ -28,11 +34,45 @@
   </head>
   <body>
       <div id="root"></div>
+      <!-- polyfill for scroll-behavior -->
+      <script src="js/smoothscroll.js"></script>
+
       <script src="RouterExample/elm.js"></script>
       <script>
+        // Embed Elm app and define ports
         var app = Elm.RouterExample.Main.embed(document.getElementById('root'));
 
+        // port openAlertNextFrame : String -> Cmd msg
+        // Version that does not rely on using Elm subscriptions
+        // Wait one paint cycle before calling dispatchAlertSizes,
+        // so that DOM is set up first.
+        app.ports.openAlertNextFrame.subscribe(function(domId) {
+            var boundFunction = dispatchAlertSizes.bind(null, domId);
+            window.requestAnimationFrame(boundFunction);
+        });
+
+        // Dispatch a DOM custom event for Elm to handle
+        function dispatchAlertSizes(domId) {
+            var wrapper = document.getElementById(domId);
+            if (wrapper == null) {
+                console.log('alert ' + domId + ' not found');
+            } else {
+                console.log('firing alertSizes for ' + domId);
+                var event = new CustomEvent('alertSizes',
+                  { 'bubbles': true, 'cancelable': false });
+                wrapper.dispatchEvent(event);
+            }
+        }
+
+        // Smooth scrolling to top of page
+        // Use CSSOM scroll behavior or Dustan Kasten's polyfill.
+        // port scrollToTop : () -> Cmd msg
+        app.ports.scrollToTop.subscribe(function() {
+            return window.scrollTo({ behavior: 'smooth', left: 0, top: 0 });
+        });
+
         // From bootstrap.js -- force reflow at beginning of transition
+        // port forceReflow : () -> Cmd msg
         app.ports.forceReflow.subscribe(function() {
             var items = document.getElementsByClassName('spa-page-item');
             console.log('getting offsetWidth for ' + items.length + ' carousel items');

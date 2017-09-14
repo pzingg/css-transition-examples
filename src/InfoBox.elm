@@ -221,7 +221,7 @@ view { domId, tagName, htext, content } state =
                 ( _, Just h ) ->
                     ( "info-box-wrapper open", (toString h) ++ "px" )
     in
-        div []
+        div [ class "info-box" ]
             [ node tagName
                 []
                 [ text htext
