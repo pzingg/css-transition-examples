@@ -13,12 +13,16 @@
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/* jshint browser: true, unused: false */
+
 var PrintRevealNotes = function() {
+    'use strict';
+
     /* Open the window */
     var w = window.open('about:blank'); /* Open a blank window */
 
     /* Write the titles */
-    var doctitle = "Speaker notes for " + document.title + " Presentation";
+    var doctitle = 'Speaker notes for ' + document.title + ' Presentation';
     w.document.write('<html><head><title>' + doctitle + '</title></head><body>');
     w.document.write('<center><h1>' + doctitle + '</h1></center>');
 
@@ -31,14 +35,14 @@ var PrintRevealNotes = function() {
     for (var e in allSlides) {
         if (allSlides.hasOwnProperty(e)) { /* Make sure it is not an inherited object property */
             var el = allSlides[e];
-            if (el.parentNode.tagName == "SECTION") { /* If it is in another slide, then it is a subslide */
+            if (el.parentNode.tagName === 'SECTION') { /* If it is in another slide, then it is a subslide */
                 slides.push(el);
             } else { /* Not a subslide; either a container or a orphan slide */
                 var isOwnSlide = true; /* Default to is an orphan slide */
                 /* Check if not an orphan slide */
                 for (var i in el.children) { /* Search for sub-slides by looping through children */
                     if (el.children.hasOwnProperty(i)) { /* Make sure it is not an inherited object property */
-                        if (el.children[i].tagName == "SECTION") { /* Contains another slide, skip it */
+                        if (el.children[i].tagName === 'SECTION') { /* Contains another slide, skip it */
                             isOwnSlide = false; /* Skip the slide */
                         }
                     }
@@ -54,11 +58,11 @@ var PrintRevealNotes = function() {
     var num = 0;
     for (var slide in slides) {
         if (slides.hasOwnProperty(slide)) { /* Make sure it is not an inherited object property */
-            var el = slides[slide];
-            var titleel = el.querySelector('h1, h2, h3, h4, h5, h6') || document.createElement('h1'); /* Look for a slide title, or create a blank one */
+            var slideel = slides[slide];
+            var titleel = slideel.querySelector('h1, h2, h3, h4, h5, h6') || document.createElement('h1'); /* Look for a slide title, or create a blank one */
             num++;
-            var title = num + ". " + titleel.innerText; /* Don't keep the html */
-            var notesel = el.querySelector('aside.notes') || document.createElement('aside'); /* Look for notes, or create a blank one */
+            var title = num + '. ' + titleel.innerText; /* Don't keep the html */
+            var notesel = slideel.querySelector('aside.notes') || document.createElement('aside'); /* Look for notes, or create a blank one */
             var notes = notesel.innerHTML; /* Keep the html for formatting */
             w.document.write('<br><b>' + title + '</b><br>' + notes + '<br>');
 

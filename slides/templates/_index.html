@@ -86,12 +86,13 @@
 
         </script>
 
-        <!-- Extract speaker notes
+        <!-- Extract speaker notes -->
         <script src="js/PrintRevealNotes.js"></script>
         <script>
-            setTimeout(function() { PrintRevealNotes(); }, 3000);
+            if (window.location.search.match( /print-notes/gi )) { 
+                setTimeout(function() { PrintRevealNotes(); }, 3000);
+            }
         </script>
-        -->
 
     </body>
 
