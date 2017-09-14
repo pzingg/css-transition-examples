@@ -505,6 +505,8 @@ resetTransition model =
 
 
 {-| Four different example alert configurations, with different severities, dismissal types, etc.
+Note that we are using the same `domId` for all four configurations, so each configuration
+will overwrite the previous one when `openAlert` is called.
 -}
 alertConfig : Int -> Alert.Config
 alertConfig i =
@@ -542,11 +544,12 @@ alertConfig i =
             }
 
 
-{-| Example configuration for an info box
+{-| Example configuration for an info box. The `domId` will be separate for each route,
+so the states will be independent on each page.
 -}
-infoBoxConfig : InfoBox.Config
-infoBoxConfig =
-    { domId = "ib-example"
+infoBoxConfig : Route -> InfoBox.Config
+infoBoxConfig route =
+    { domId = "ib-" ++ toString route
     , tagName = "p"
     , htext = "Is this quotation in the public domain"
     , content =
@@ -568,23 +571,25 @@ infoBoxConfig =
 
     - a navbar.
     - an alert (initially hidden).
-    - a Carousel in which we animate router transitions. Each carousel item holds page content.
+    - a Bootstrap carousel in which we animate router transitions. Each carousel item holds
+    page content, including an info box.
 
 -}
 view : Model -> Html Msg
 view model =
     let
-        -- just the real routes, please, in an indexed list
+        -- Fetch just the real routes as an indexed list
         routes =
             Array.toList model.routes
                 |> List.filter (\r -> r /= NoRoute)
                 |> List.indexedMap (,)
 
-        -- use the carouselItem function to generate the carousel items
+        -- Use the carouselItem function to generate the content for the carousel items
         carouselItems =
             routes
                 |> List.map (\( i, route ) -> (carouselItem i route model))
     in
+        -- Assemble the navbar, alert and carousel
         div [ class "container" ]
             [ div
                 [ class "header clearfix" ]
@@ -673,63 +678,79 @@ functions for each route.
 -}
 getPageContent : Int -> Route -> Model -> List (Html Msg)
 getPageContent i route model =
+    [ pageHeader route
+    , pageQuote i model
+    , InfoBox.view (infoBoxConfig route) model.infoBoxes
+        |> Html.map InfoBoxMsg
+    , p []
+        [ a
+            [ class "btn btn-lg btn-success"
+            , href "#"
+            , attribute "role" "button"
+            , onClick <| ShowAlert (model.alertConfigIndex + 1)
+            ]
+            [ text "Next Alert" ]
+        , a
+            [ class "btn btn-lg btn-info"
+            , style [ ( "margin-left", "10px" ) ]
+            , href "#"
+            , attribute "role" "button"
+            , onClick <| DismissAlert model.alertConfigIndex
+            ]
+            [ text "Dismiss Alert" ]
+        ]
+    ]
+
+
+{-| Sample header text generated for a page.
+-}
+pageHeader : Route -> Html Msg
+pageHeader route =
+    let
+        txt =
+            case route of
+                HomeRoute ->
+                    "Home Page"
+
+                AboutRoute ->
+                    "About Page"
+
+                NotFoundRoute ->
+                    "Page Not Found"
+
+                NoHashRoute ->
+                    "ERROR! No Hash"
+
+                NoRoute ->
+                    "ERROR! No Previous Route"
+    in
+        h2 []
+            [ text txt ]
+
+
+{-| Sample content generated for a page.
+-}
+pageQuote : Int -> Model -> Html Msg
+pageQuote i model =
     let
         quote =
             Array.get i model.pages
                 |> Maybe.withDefault Quotes.errorQuote
     in
-        [ h2 []
-            [ pageText route ]
-        , p [ style [ ( "font-size", "1.5em" ) ] ]
-            [ text quote.quoteText ]
-        , p [ style [ ( "font-style", "italic" ) ] ]
-            -- emdash
-            [ text ("— " ++ quote.quoteAuthor) ]
-        , InfoBox.view infoBoxConfig model.infoBoxes
-            |> Html.map InfoBoxMsg
-        , p []
-            [ a
-                [ class "btn btn-lg btn-success"
-                , href "#"
-                , attribute "role" "button"
-                , onClick <| ShowAlert (model.alertConfigIndex + 1)
-                ]
-                [ text "Next Alert" ]
-            , a
-                [ class "btn btn-lg btn-info"
-                , style [ ( "margin-left", "10px" ) ]
-                , href "#"
-                , attribute "role" "button"
-                , onClick <| DismissAlert model.alertConfigIndex
-                ]
-                [ text "Dismiss Alert" ]
+        div []
+            [ p [ style [ ( "font-size", "1.5em" ) ] ]
+                [ text quote.quoteText ]
+            , p [ style [ ( "font-style", "italic" ) ] ]
+                -- emdash
+                [ text ("— " ++ quote.quoteAuthor) ]
             ]
-        ]
 
 
-{-| Sample text generated for a page.
--}
-pageText : Route -> Html Msg
-pageText route =
-    case route of
-        HomeRoute ->
-            text "Home Page"
-
-        AboutRoute ->
-            text "About Page"
-
-        NotFoundRoute ->
-            text "Page Not Found"
-
-        NoHashRoute ->
-            text "ERROR! No Hash"
-
-        NoRoute ->
-            text "ERROR! No Previous Route"
-
-
-{-| Determine the whether the class name applied to the carousel item for the
-specified route will be "active", "next", and/or "left", depending on the transition state.
+{-| Determine the whether the class name applied to the carousel item for the specified route
+will be "active", "next", and/or "left", based on the transition state and whether the
+route is the current "active" route (the route the application is transitioning from), or the
+"next" route (the route the application is transitioning to), or in the case where there is no
+"next" route (after the transition is finished).
 -}
 carouselItemHelper : Route -> Model -> ( Bool, Bool, Bool )
 carouselItemHelper route model =
@@ -751,10 +772,7 @@ carouselItemHelper route model =
                 ( route == activeRoute, False, False )
 
 
-{-| Calculate the DOM classes for a carousel item, based on the tranistion state and whether the route is
-the current "active" route (the route the application is transitioning from), or the "next" route
-(the route the application is transitioning to), or the case where there is no "next" route (after the
-transition is finished).
+{-| Calculate the DOM class names for a carousel item, using the helper function.
 -}
 carouselItemClasses : Route -> Model -> String
 carouselItemClasses route model =
@@ -762,8 +780,8 @@ carouselItemClasses route model =
         ( isActive, isNext, isLeft ) =
             carouselItemHelper route model
 
-        -- Borrowed from Html.classList.
-        -- Given a list of tuples of ( String, Bool ), join the strings for which the boolean is True.
+        -- Borrowed from Html.classList:  Given a list of tuples of ( String, Bool ),
+        -- join the strings for which the predicate is True.
         itemClasses list =
             list
                 |> List.filter Tuple.second
