@@ -5,7 +5,7 @@ The src folder contains "shared view" code for three modules:
 * `Alert` module for animated alerts (or "flash" messages).
 
 * `AlertWithSub` module: a slight variant of the `Alert` module that uses the
-`AnimationFrame.times` Sub function to ensure that initial views are painted for at
+`AnimationFrame.times` Sub function to ensure that initial views are rendered for at
 least one animation frame cycle.
 
 * `InfoBox` module for animated blocks of text triggered by an icon click.

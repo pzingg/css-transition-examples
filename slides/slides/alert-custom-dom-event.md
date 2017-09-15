@@ -2,7 +2,7 @@
 
 <pre class="fragment"><code class="js" data-trim data-noescape>// port openAlertNextFrame : String -> Cmd msg
 // Version that does not rely on using Elm subscriptions.
-// Wait one paint cycle before calling dispatchAlertSizes,
+// Wait one render cycle before calling dispatchAlertSizes,
 // so that DOM is set up first.
 app.ports.openAlertNextFrame.subscribe(function(domId) {
     var boundFunction = dispatchAlertSizes.bind(null, domId);
@@ -30,7 +30,7 @@ a custom event.  We'll call it "alertSizes".
 * Here's the code. It's pretty simple. We create an event with the type "alertSizes" and then dispatch it on the
 wrapper element.
 * The only subtlety is that since we're calling this port from our Elm update function, potentially before the
-DOM tree for our alert has been "painted" onto the virtual DOM, we will use <code>requestAnimationFrame</code> to delay
-the event dispatch process for one paint cycle so that the wrapper element will actually be found in the document.
+DOM tree for our alert has been "rendered" onto the virtual DOM, we will use <code>requestAnimationFrame</code> to delay
+the event dispatch process for one render cycle so that the wrapper element will actually be found in the document.
 * We'll see some other ways to deal with these timing issues later, but since we already have to resort to
 port to do this work, <code>requestAnimationFrame</code> is a straightforward technique here.

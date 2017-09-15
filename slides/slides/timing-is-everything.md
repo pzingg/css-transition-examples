@@ -1,22 +1,25 @@
 ## Timing is everything
 
+<img alt="Elm pattern" src="resources/elm-pattern_s1800x0_q80_noupscale.png" style="height: 250px; border: none;">
 
-
-<ol>
-<li class="fragment">Use `requestAnimationFrame` in a JavaScript port
-<li class="fragment">Use Elm Subs with an `InitialPaint` visibility state
-<li class="fragment">Use `Process.sleep` Task to wait 100 to 200 milliseconds
+<ul>
+<li class="fragment">`requestAnimationFrame` in a JavaScript port
+<li class="fragment">Elm Sub with an `InitialRender` visibility state
+<li class="fragment">`Process.sleep` Task
 </ol>
 
 note:
-* Sometimes our code wants to paint a new tree and start the animation as soon as possible.
-* For the animation to work, you have to make sure that the initial state is painted on the VDOM for at least one cycle.
+* Sometimes our code wants to render a new tree and start the animation as soon as possible.
+* For the animation to work, you have to make sure that the initial state is rendered on the VDOM for at least one cycle.
 * In the info box example, special timing is not necessary, because the content is always on the VDOM, and we just
-wait for a user click to paint the target height value.
+wait for a user click to render the target height value.
 * In the alert example, we needed a port to dispatch a custom DOM event, so we can take advantage
 of JavaScript's <code>requestAnimationFrame</code>, which we saw in a previous slide
-* But we could also have waited for an initial paint on the Elm side by adding one more tag, called <code>InitialPaint</code,
+* But we could also have waited for an initial render on the Elm side by adding one more tag, called <code>InitialRender</code,
 to our visibility type, and then using a Sub from the <code>AnimationFrame</code> module to let us know when
-the view has been painted with the initial (zero) height value.
+the view has been rendered with the initial (zero) height value.
 * In the page transition example, we use the <code>Process.sleep</code> technique, and just delay the beginning of the
 animation by 100 milliseconds.
+
+Image Credit:
+* [Ossi Hanhinen: How Elm made our work better](http://futurice.com/blog/elm-in-the-real-world)

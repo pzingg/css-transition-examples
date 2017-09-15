@@ -463,7 +463,7 @@ removeTimer dismissal =
 {-| JavaScript port that simply dispatches an `alertSizes` CustomEvent
 on the element with the specified DOM Id. The version in this example
 uses `requestAnimationFrame` to delay the dispatch for one animation cycle,
-in order to allow the initial state to be painted on the VDOM.
+in order to allow the initial state to be rendered on the VDOM.
 -}
 port openAlertNextFrame : String -> Cmd msg
 

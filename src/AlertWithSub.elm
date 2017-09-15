@@ -112,7 +112,7 @@ type alias Config =
 -}
 type Visibility
     = Hidden
-    | InitialPaint
+    | InitialRender
     | Opening
     | Summary
     | Details
@@ -174,8 +174,8 @@ init =
 {-| Set an Alert's visibility to `Opening`, record a new `instanceId`, and
 call `openAlertNextFrame` to detect the heights of the Alert's content wells.
 
-In this version that uses subscriptions, we set the visibility to InitialPaint,
-and delay calling openAlertImmediate port until the InitialPainted msg has been
+In this version that uses subscriptions, we set the visibility to InitialRender,
+and delay calling openAlertImmediate port until the InitialRendered msg has been
 received in our update function.
 
 -}
@@ -191,7 +191,7 @@ open { domId, dismissal } ((State priv) as state) =
                     { props
                         | instanceId = instanceId
                         , dismissal = dismissal
-                        , visibility = InitialPaint
+                        , visibility = InitialRender
                         , summaryHeight = 0
                         , detailsHeight = 0
                     }
@@ -242,7 +242,7 @@ pageChangeDismiss (State priv) =
 -}
 type Msg
     = Resized String Dismissal Float Float
-    | InitialPainted Time
+    | InitialRendered Time
     | DetailsClicked String
     | CloseClicked String
     | TransitionEnd String String
@@ -262,10 +262,10 @@ DOM `tranistionend` events return a `TransitionEnded` `OutMsg`.
 update : Msg -> State -> ( State, Cmd Msg, Maybe OutMsg )
 update msg state =
     case msg of
-        InitialPainted _ ->
+        InitialRendered _ ->
             let
                 ( nextState, cmds ) =
-                    initialPainted state
+                    initialRendered state
             in
                 ( nextState, cmds, Nothing )
 
@@ -328,18 +328,18 @@ dismissalCmd domId dismissal state =
                 Cmd.none
 
 
-{-| Receiving an `InitialPainted` message means that one or more alerts
-have now been painted on the VDOM, so we can now safely dispatch the `alertSizes`
+{-| Receiving an `InitialRendered` message means that one or more alerts
+have now been rendered on the VDOM, so we can now safely dispatch the `alertSizes`
 custom DOM event using the `openAlertImmediate` port. We also update the
-visibility of these alerts to `Opening`, so that the `InitialPainted`
+visibility of these alerts to `Opening`, so that the `InitialRendered`
 subscription can be removed.
 -}
-initialPainted : State -> ( State, Cmd Msg )
-initialPainted (State priv) =
+initialRendered : State -> ( State, Cmd Msg )
+initialRendered (State priv) =
     let
-        openAlerts domId props ( bag, xsCmds ) =
+        accumulator domId props ( bag, xsCmds ) =
             case props.visibility of
-                InitialPaint ->
+                InitialRender ->
                     ( Dict.insert domId { props | visibility = Opening } bag
                     , (openAlertImmediate domId) :: xsCmds
                     )
@@ -348,7 +348,7 @@ initialPainted (State priv) =
                     ( Dict.insert domId props bag, xsCmds )
 
         ( nextBag, cmdList ) =
-            Dict.foldl openAlerts ( Dict.empty, [] ) priv.bag
+            Dict.foldl accumulator ( Dict.empty, [] ) priv.bag
     in
         ( State { priv | bag = nextBag }, Cmd.batch cmdList )
 
@@ -501,17 +501,17 @@ removeTimer dismissal =
 -- SUBSCRIPTIONS
 
 
-{-| Set up a subscription if any of the alerts have the InitialPaint visibility.
+{-| Set up a subscription if any of the alerts have the InitialRender visibility.
 -}
 subscriptions : State -> Sub Msg
 subscriptions (State priv) =
     let
-        initialPaintFilter _ props =
-            props.visibility == InitialPaint
+        initialRenderFilter _ props =
+            props.visibility == InitialRender
     in
-        case Dict.filter initialPaintFilter priv.bag |> Dict.isEmpty of
+        case Dict.filter initialRenderFilter priv.bag |> Dict.isEmpty of
             False ->
-                AnimationFrame.times InitialPainted
+                AnimationFrame.times InitialRendered
 
             True ->
                 Sub.none
@@ -524,7 +524,7 @@ subscriptions (State priv) =
 {-| JavaScript port that simply dispatches an `alertSizes` CustomEvent
 on the element with the specified DOM Id. The version in this example
 does not use `requestAnimationFrame`, since the port is called only
-after the initial state has been painted.
+after the initial state has been rendered.
 -}
 port openAlertImmediate : String -> Cmd msg
 

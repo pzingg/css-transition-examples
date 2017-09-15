@@ -52,10 +52,9 @@
     "alert-view-helper.md",
     "alert-view-function.md",
     "alert-update-function.md",
-    "infobox-and-page-transition-examples.md",
     "timing-is-everything.md",
-    "initial-paint-subscription.md",
-    "handling-initial-painted.md",
+    "initial-render-subscription.md",
+    "handling-initial-render.md",
     "process-sleep-task.md",
     "other-elm-animation-packages.md",
     "thank-you.md"
