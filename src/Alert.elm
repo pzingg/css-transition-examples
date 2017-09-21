@@ -490,7 +490,7 @@ view ({ domId, dismissal } as config) state =
     div
         [ id domId
         , class alertWrapperClass
-        , style <| wrapperStylesFor <| getProperties domId state
+        , style <| summaryStyles <| getProperties domId state
         , on "alertSizes" <| resizeHandler domId dismissal
         , onWithOptions "transitionend"
             { stopPropagation = True, preventDefault = True }
@@ -551,7 +551,7 @@ detailsContent domId details state =
                         [ ( "alert-details", True )
                         , ( "open", detailsOpenFor props )
                         ]
-                    , style <| detailsStylesFor props
+                    , style <| detailsStyles props
                     , onWithOptions "transitionend"
                         { stopPropagation = True, preventDefault = True }
                         (Json.succeed <| TransitionEnd domId (domId ++ "-details"))
@@ -564,8 +564,8 @@ detailsContent domId details state =
                     ]
 
 
-wrapperStylesFor : Properties -> List ( String, String )
-wrapperStylesFor { visibility, summaryHeight, detailsHeight } =
+summaryStyles : Properties -> List ( String, String )
+summaryStyles { visibility, summaryHeight, detailsHeight } =
     case visibility of
         Summary ->
             [ ( "height", toString (summaryHeight + 10) ++ "px" ) ]
@@ -596,8 +596,8 @@ detailsOpenFor { visibility } =
             False
 
 
-detailsStylesFor : Properties -> List ( String, String )
-detailsStylesFor { visibility, detailsHeight } =
+detailsStyles : Properties -> List ( String, String )
+detailsStyles { visibility, detailsHeight } =
     case visibility of
         Details ->
             [ ( "height", toString (detailsHeight + 10) ++ "px" ) ]

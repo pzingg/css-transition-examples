@@ -31,18 +31,7 @@
             "data-transition": "fade-in slide-out"
         }
     },
-    {
-        "filename": "alert-css-1.md",
-        "attr": {
-            "data-transition": "slide-in fade-out"
-        }
-    },
-    {
-        "filename": "alert-css-2.md",
-        "attr": {
-            "data-transition": "fade-in slide-out"
-        }
-    },
+    "alert-css.md",
     "alert-state.md",
     "alert-custom-dom-event.md",
     "summary-height-decoder.md",

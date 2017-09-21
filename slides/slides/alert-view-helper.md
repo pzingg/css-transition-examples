@@ -1,7 +1,7 @@
 ##  Elm `view` helper
 
-<pre class="fragment"><code class="elm" data-trim data-noescape>wrapperStylesFor : Properties -> List ( String, String )
-wrapperStylesFor { visibility, summaryHt, detailsHt } =
+<pre class="fragment"><code class="elm" data-trim data-noescape>summaryStyles : Properties -> List ( String, String )
+summaryStyles { visibility, summaryHt, detailsHt } =
     case visibility of
         Summary ->
             [ ( "height"
