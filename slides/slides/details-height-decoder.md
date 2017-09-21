@@ -1,4 +1,4 @@
-## Decoding the details element's height
+## Decoding details element height
 
 ```elm
 detailsHeightDecoder : Json.Decode.Decoder Float
@@ -14,5 +14,6 @@ detailsHeightDecoder =
 ```
 
 note:
-* We'll need to write another Json decoder to get the <code>offsetHeight</code> of the details element from the same "alertSizes" event.
-* It has to walk through three descendant elements before getting the <code>offsetHeight</code> value.
+* We'll need to write another JSON decoder to get the `offsetHeight` of the details element from
+the same "alertSizes" event.
+* It has to walk through three descendant elements before getting the `offsetHeight` value.

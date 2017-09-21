@@ -28,4 +28,4 @@ for the widget
 * And here is the type alias for the full set of properties we need to maintain
 for each alert widget. It includes a few other values that must be set and read dynamically.
 * Specifically we will be obtaining the (initially hidden) height of the content areas
-we will be animating, so we keep them in the properties record.
+we will be animating, so we keep them in the Properties record.

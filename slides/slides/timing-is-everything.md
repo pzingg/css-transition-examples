@@ -14,11 +14,11 @@ note:
 * In the info box example, special timing is not necessary, because the content is always on the VDOM, and we just
 wait for a user click to render the target height value.
 * In the alert example, we needed a port to dispatch a custom DOM event, so we can take advantage
-of JavaScript's <code>requestAnimationFrame</code>, which we saw in a previous slide
-* But we could also have waited for an initial render on the Elm side by adding one more tag, called <code>InitialRender</code,
-to our visibility type, and then using a Sub from the <code>AnimationFrame</code> module to let us know when
-the view has been rendered with the initial (zero) height value.
-* In the page transition example, we use the <code>Process.sleep</code> technique, and just delay the beginning of the
+of JavaScript's `requestAnimationFrame`, which we saw in a previous slide
+* But we could also have waited for an initial render on the Elm side by adding one more tag,
+called `InitialRender`, to our visibility type, and then use a Sub from the `AnimationFrame`
+module to let us know when the view has been rendered with the initial (zero) height value.
+* In the page transition example, we use the `Process.sleep` technique, and just delay the beginning of the
 animation by 100 milliseconds.
 
 Image Credit:

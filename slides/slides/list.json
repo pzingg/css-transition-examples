@@ -32,6 +32,8 @@
         }
     },
     "alert-css.md",
+    "alert-css-by-class-1.md",
+    "alert-css-by-class-2.md",
     "alert-state.md",
     "alert-custom-dom-event.md",
     "summary-height-decoder.md",

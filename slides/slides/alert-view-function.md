@@ -16,9 +16,9 @@ view ({ domId, dismissal } as config) state =
 </code></pre>
 
 note:
-* And here is the top of the <code>Alert.view</code> function.
+* And here is the top of the `Alert.view` function.
 * You'll see where the outermost wrapper element has the "alertSizes" and "transtionend" event handlers
-* The "alertSizes" handler we've seen before; it will send the <code>Resized</code> message
-* The "transitionend" handler just sends a <code>TransitionEnd</code> message
-* And you can see where the <code>style</code> of the wrapper, like <code>height: 0px</code>, comes from
-the <code>summaryStyles</code> helper function from the last slide.
+* The "alertSizes" handler we've seen before; it will send the `Resized` message
+* The "transitionend" handler just sends a `TransitionEnd` message
+* And you can see where the `style` of the wrapper, like `height: 0px`, comes from
+a `summaryStyles` helper function, that we'll look at next.

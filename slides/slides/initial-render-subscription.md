@@ -18,4 +18,4 @@ subscriptions (State priv) =
 note:
 * Here's the subscription code that we could have used for the alert example
 * If we are waiting for the view to be rendered on any of our alerts, we set up a subscription
-that will send us an <code>InitialRendered</code> message using the <code>AnimationFrame.times</code> function.
+that will send us an `InitialRendered` message using the `AnimationFrame.times` function.

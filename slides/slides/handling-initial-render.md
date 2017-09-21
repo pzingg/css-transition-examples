@@ -20,8 +20,8 @@ initialRendered (State priv) =
 </code></pre>
 
 note:
-* And here's where we handle that <code>InitialRendered</code> message/
-* We add a JavaScript port call, <code>openAlertImmediate</code>, for any of the alerts that are in the
-<code>InitialRender</code> visibility state.
-* And now <code>openAlertImmediate</code> doesn't have to wait for an animation frame, because we know
+* And here's where we handle that `InitialRendered` message/
+* We add a JavaScript port call, `openAlertImmediate`, for any of the alerts that are in the
+`InitialRender` visibility state.
+* And now `openAlertImmediate` doesn't have to wait for an animation frame, because we know
 these alerts have been rendered on the VDOM already.

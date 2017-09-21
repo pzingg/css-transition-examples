@@ -207,19 +207,8 @@ the iconClickHander function.
 view : Config -> State -> Html Msg
 view { domId, tagName, htext, content } state =
     let
-        { visibility, height } =
-            getProperties domId state
-
-        ( wrapperClass, wrapperHeight ) =
-            case ( visibility, height ) of
-                ( Hidden, _ ) ->
-                    ( "info-box-wrapper", "0" )
-
-                ( _, Nothing ) ->
-                    ( "info-box-wrapper", "0" )
-
-                ( _, Just h ) ->
-                    ( "info-box-wrapper open", (toString h) ++ "px" )
+        ( class_, style_ ) =
+            classAndStyle <| getProperties domId state
     in
         div [ class "info-box" ]
             [ node tagName
@@ -235,8 +224,8 @@ view { domId, tagName, htext, content } state =
                 ]
             , div
                 [ id domId
-                , class wrapperClass
-                , style [ ( "height", wrapperHeight ) ]
+                , class class_
+                , style style_
                 , onWithOptions "transitionend"
                     { stopPropagation = False, preventDefault = True }
                     (Json.succeed <| TransitionEnd domId)
@@ -245,6 +234,23 @@ view { domId, tagName, htext, content } state =
                     [ content ]
                 ]
             ]
+
+
+classAndStyle : Properties -> ( String, List ( String, String ) )
+classAndStyle { visibility, height } =
+    let
+        ( wrapperClass, wrapperHeight ) =
+            case ( visibility, height ) of
+                ( Hidden, _ ) ->
+                    ( "info-box-wrapper", "0px" )
+
+                ( _, Nothing ) ->
+                    ( "info-box-wrapper", "0px" )
+
+                ( _, Just h ) ->
+                    ( "info-box-wrapper open", (toString h) ++ "px" )
+    in
+        ( wrapperClass, [ ( "height", wrapperHeight ) ] )
 
 
 iconClickHandler : String -> Decoder Msg
