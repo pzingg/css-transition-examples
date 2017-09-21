@@ -12,4 +12,4 @@ resizeHandler domId dismissal =
 
 note:
 * Now that we have the two height decoders, we can hook them to the "alertSizes" handler in our view.
-* First, we use <code>Json.Decode.map2</code> and <code>Json.Decode.andThen</code> to combine the results of the decoders.
+* First, we use `Json.Decode.map2` and `Json.Decode.andThen` to combine the results of the decoders.
