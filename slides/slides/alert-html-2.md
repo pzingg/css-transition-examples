@@ -1,4 +1,4 @@
-<h2>Alert widget HTML structure</h2>
+## Alert widget HTML structure
 
 <pre><code class="elm" data-trim data-noescape>div [ class "alert-wrapper row", id "alert-info", ... ]
 
@@ -17,9 +17,6 @@
     ]
 </code></pre>
 
-<aside class="notes">
-<ul>
-<li>You can see that there are two divs with a "content" class, and "wrapper" divs around them.
-<li>There is a summary-level content area...
-</ul>
-</aside>
+note:
+* You can see that there are two divs with a "content" class, and "wrapper" divs around them.
+* There is a summary-level content area...

@@ -1,4 +1,4 @@
-<h2>Alert CSS</h2>
+## Alert CSS
 
 <pre><code class="css" data-trim data-noescape>.alert-wrapper, .alert-details {
     overflow: hidden;
@@ -13,8 +13,5 @@
 }
 </code></pre>
 
-<aside class="notes">
-<ul>
-<li>And here is the associated CSS styles for that structure.
-<ul>
-</aside>
+note:
+* And here is the associated CSS styles for that structure.

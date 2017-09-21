@@ -14,31 +14,31 @@
     "demo-time.md",
     "alert-recipe.md",
     {
-        "filename": "alert-html-1.html",
+        "filename": "alert-html-1.md",
         "attr": {
             "data-transition": "slide-in fade-out"
         }
     },
     {
-        "filename": "alert-html-2.html",
+        "filename": "alert-html-2.md",
         "attr": {
             "data-transition": "fade-in fade-out"
         }
     },
     {
-        "filename": "alert-html-3.html",
+        "filename": "alert-html-3.md",
         "attr": {
             "data-transition": "fade-in slide-out"
         }
     },
     {
-        "filename": "alert-css-1.html",
+        "filename": "alert-css-1.md",
         "attr": {
             "data-transition": "slide-in fade-out"
         }
     },
     {
-        "filename": "alert-css-2.html",
+        "filename": "alert-css-2.md",
         "attr": {
             "data-transition": "fade-in slide-out"
         }
@@ -49,9 +49,9 @@
     "details-height-decoder.md",
     "resize-handler-1.md",
     "resize-handler-2.md",
-    "alert-view-helper.md",
-    "alert-view-function.md",
     "alert-update-function.md",
+    "alert-view-function.md",
+    "alert-view-helper.md",
     "timing-is-everything.md",
     "initial-render-subscription.md",
     "handling-initial-render.md",

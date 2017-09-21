@@ -1,4 +1,4 @@
-<h2>Alert widget HTML structure</h2>
+## Alert widget HTML structure
 
 <pre><code class="elm" data-trim data-noescape>div [ class "alert-wrapper row", id "alert-info", ... ]
 
@@ -17,10 +17,7 @@
     ]
 </code></pre>
 
-<aside class="notes">
-<ul>
-<li>...and a nested details-level content area.
-<li>Each of these two content areas can be specified by the programmer, so we must be able to find
+note:
+* ...and a nested details-level content area.
+* Each of these two content areas can be specified by the programmer, so we must be able to find
 out what the target heights of these areas will be, to animate them.
-</ul>
-</aside>

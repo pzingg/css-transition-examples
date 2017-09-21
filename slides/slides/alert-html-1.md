@@ -1,4 +1,4 @@
-<h2>Alert widget HTML structure</h2>
+## Alert widget HTML structure
 
 <pre><code class="elm" data-trim data-noescape>div [ class "alert-wrapper row", id "alert-info", ... ]
 
@@ -17,9 +17,6 @@
     ]
 </code></pre>
 
-<aside class="notes">
-<ul>
-<li>Here is a simplified view of the DOM tree structure for our alert, as emitted in our Elm view function.
-<li>Bootstrap provides a lot of the basic CSS styles for the content areas.
-</ul>
-</aside>
+note:
+* Here is a simplified view of the DOM tree structure for our alert, as emitted in our Elm view function.
+* Bootstrap provides a lot of the basic CSS styles for the content areas.
