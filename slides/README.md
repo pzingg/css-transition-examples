@@ -8,3 +8,5 @@ and the [generator-reveal](https://github.com/slara/generator-reveal) npm module
 management.
 
 To run live-reloading web server, use `grunt serve`.
+
+To create static files, use `grunt dist`.
