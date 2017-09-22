@@ -55,6 +55,14 @@
         // Version that does not rely on using Elm subscriptions
         // Wait one paint cycle before calling dispatchAlertSizes,
         // so that DOM is set up first.
+        app.ports.openAlertImmediate.subscribe(function(domId) {
+            dispatchAlertSizes(domId);
+        });
+
+        // port openAlertNextFrame : String -> Cmd msg
+        // Version that does not rely on using Elm subscriptions
+        // Wait one paint cycle before calling dispatchAlertSizes,
+        // so that DOM is set up first.
         app.ports.openAlertNextFrame.subscribe(function(domId) {
             var boundFunction = dispatchAlertSizes.bind(null, domId);
             window.requestAnimationFrame(boundFunction);
