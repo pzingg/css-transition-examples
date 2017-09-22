@@ -5,11 +5,15 @@ view ({ domId, dismissal } as config) state =
     div
         [ id domId
         , class alertWrapperClass
-        <mark>, style <| summaryStyles <| getProperties domId state</mark>
-        <mark>, on "alertSizes" <| resizeHandler domId dismissal</mark>
-        <mark>, onWithOptions "transitionend"</mark>
-            <mark>{ stopPropagation = True, preventDefault = True }</mark>
-            <mark>(TransitionEnd domId domId |> Json.Decode.succeed)</mark>
+
+        -- summaryStyles returns a List, like [ ( "height", "82px" ) ]
+        , style <| summaryStyles <| getProperties domId state</mark>
+
+        -- handlers for the alertSizes and transitioned events
+        , on "alertSizes"
+             <| resizeHandler domId dismissal
+        , on "transitionend"
+             <| Json.Decode.succeed <| TransitionEnd domId domId
         ]
         [ viewContent config state ]
 

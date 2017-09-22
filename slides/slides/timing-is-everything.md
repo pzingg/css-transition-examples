@@ -1,6 +1,6 @@
 ## Timing is everything
 
-<img alt="Elm pattern" src="resources/elm-pattern_s1800x0_q80_noupscale.png" style="height: 250px; border: none;">
+<img alt="Elm pattern" src="resources/elm-pattern_s1800x0_q80_noupscale.png" style="height: 300px; border: none;">
 
 <ul>
 <li class="fragment">`requestAnimationFrame` in a JavaScript port

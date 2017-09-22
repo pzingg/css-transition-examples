@@ -1,4 +1,4 @@
-##  Using a `Process.sleep` Task
+## Or send a delayed message
 
 <pre><code class="elm" data-trim data-noescape>{-| Use Process.sleep Task to send a message some time in the future.
 -}

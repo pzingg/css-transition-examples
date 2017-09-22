@@ -31,22 +31,27 @@
             "data-transition": "fade-in slide-out"
         }
     },
-    "alert-css.md",
-    "alert-css-by-class-1.md",
-    "alert-css-by-class-2.md",
     "alert-state.md",
+    "alert-css.md",
     "alert-custom-dom-event.md",
-    "summary-height-decoder.md",
-    "details-height-decoder.md",
-    "resize-handler-1.md",
-    "resize-handler-2.md",
+    "update-view-timing.md",
+    "request-animation-frame.md",
+    "alert-height-decoders.md",
+    {
+        "filename": "resize-handler-1.md",
+        "attr": {
+            "data-transition": "slide-in fade-out"
+        }
+    },
+    {
+        "filename": "resize-handler-2.md",
+        "attr": {
+            "data-transition": "fade-in slide-out"
+        }
+    },
     "alert-update-function.md",
     "alert-view-function.md",
-    "alert-view-helper.md",
-    "timing-is-everything.md",
     "initial-render-subscription.md",
-    "handling-initial-render.md",
     "process-sleep-task.md",
-    "other-elm-animation-packages.md",
     "thank-you.md"
 ]

@@ -1,11 +1,11 @@
-##  CSS transition Alert recipe
+##  Recipe for the animated alert widget
 
 <ul>
 <li class="fragment">HTML structure
-<li class="fragment">CSS
 <li class="fragment">Elm model state
-<li class="fragment">Decoding content height - firing DOM event
-<li class="fragment">Decoding content height - JSON decoder
+<li class="fragment">Styling with the <code>transition</code> property
+<li class="fragment">Dispatching a DOM event to get access to <code>offsetHeight</code>
+<li class="fragment">Decoding content heights with JSON decoders
 <li class="fragment">Changing state in Elm <code>update</code> function
 <li class="fragment"><code>view</code> function with event handlers
 <li class="fragment">Elm <code>view</code> helpers

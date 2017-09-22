@@ -1,9 +1,21 @@
-##  Decoding summary element height
+##  Decoding element heights
 
 <pre class="fragment"><code class="elm" data-trim data-noescape>summaryHeightDecoder : Json.Decode.Decoder Float
 summaryHeightDecoder =
     Json.Decode.at
         [ "target"
+        , "firstChild"
+        , "offsetHeight"
+        ]
+        Json.Decode.float
+</code></pre>
+
+<pre class="fragment"><code class="elm" data-trim data-noescape>detailsHeightDecoder : Json.Decode.Decoder Float
+detailsHeightDecoder =
+    Json.Decode.at
+        [ "target"
+        , "firstChild"
+        , "lastChild"
         , "firstChild"
         , "offsetHeight"
         ]

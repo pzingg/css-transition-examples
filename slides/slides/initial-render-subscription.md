@@ -1,14 +1,16 @@
-##  Sending the `InitialRendered` message with a Sub
+##  `subscriptions` for update/view timing
 
 <pre><code class="elm" data-trim data-noescape>subscriptions : State -> Sub Msg
 subscriptions (State priv) =
     let
-        -- If alert is waiting for a VDOM render for initial state
         initialRenderFilter _ props =
+            -- filter alerts that need an initial state rendering
             props.visibility == InitialRender
     in
         case Dict.filter initialRenderFilter priv.bag |> Dict.isEmpty of
             False ->
+                -- if we have any, send an InitialRendered message
+                -- on the next animation frame tick
                 <mark>AnimationFrame.times InitialRendered</mark>
 
             True ->

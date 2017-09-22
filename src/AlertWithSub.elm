@@ -552,10 +552,11 @@ view ({ domId, dismissal } as config) state =
         [ id domId
         , class alertWrapperClass
         , style <| summaryStyles <| getProperties domId state
-        , on "alertSizes" <| resizeHandler domId dismissal
-        , onWithOptions "transitionend"
-            { stopPropagation = True, preventDefault = True }
-            (TransitionEnd domId domId |> Json.succeed)
+        , on "alertSizes" <|
+            resizeHandler domId dismissal
+        , onWithOptions "transitionend" noBubble <|
+            Json.succeed <|
+                TransitionEnd domId domId
         ]
         [ viewContent config state ]
 
@@ -613,9 +614,9 @@ detailsContent domId details state =
                         , ( "open", detailsOpenFor props )
                         ]
                     , style <| detailsStyles props
-                    , onWithOptions "transitionend"
-                        { stopPropagation = True, preventDefault = True }
-                        (Json.succeed <| TransitionEnd domId (domId ++ "-details"))
+                    , onWithOptions "transitionend" noBubble <|
+                        Json.succeed <|
+                            TransitionEnd domId (domId ++ "-details")
                     ]
                     [ div [ class "content" ]
                         [ div []
@@ -623,6 +624,11 @@ detailsContent domId details state =
                         , text str
                         ]
                     ]
+
+
+noBubble : Html.Events.Options
+noBubble =
+    { stopPropagation = True, preventDefault = True }
 
 
 summaryStyles : Properties -> List ( String, String )
@@ -705,8 +711,7 @@ resizeHandler domId dismissal =
     Json.map2 (,) summaryHeightDecoder detailsHeightDecoder
         |> Json.andThen
             (\( summaryHeight, detailsHeight ) ->
-                Resized domId dismissal summaryHeight detailsHeight
-                    |> Json.succeed
+                Json.succeed <| Resized domId dismissal summaryHeight detailsHeight
             )
 
 

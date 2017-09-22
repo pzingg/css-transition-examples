@@ -8,7 +8,7 @@ Three little animations:
 <li class="fragment">Sliding page transition
 </ul>
 
-<a class="fragment" href="http://localhost:8000/">Let's go!</a>
+<a class="fragment" href="../../demo/">Let's go!</a>
 
 note:
 The info box widget:

@@ -624,11 +624,21 @@ navbar model =
                         [ text "About" ]
                     ]
                 , li [ attribute "role" "presentation" ]
-                    [ a [ href "http://localhost:9000/#/9" ]
+                    [ a [ href "../slides/dist/#/9" ]
                         [ text "Back to Slides" ]
                     ]
                 ]
             ]
+
+
+noBubble : Html.Events.Options
+noBubble =
+    { stopPropagation = True, preventDefault = True }
+
+
+noDefault : Html.Events.Options
+noDefault =
+    { stopPropagation = False, preventDefault = True }
 
 
 {-| When clicking a link we want to prevent the default browser behaviour which is to load a
@@ -636,13 +646,7 @@ new page. So we use `onWithOptions` instead of `onClick`.
 -}
 onLinkClick : msg -> Attribute msg
 onLinkClick message =
-    let
-        options =
-            { stopPropagation = False
-            , preventDefault = True
-            }
-    in
-        onWithOptions "click" options (Json.succeed message)
+    onWithOptions "click" noDefault <| Json.succeed message
 
 
 {-| Generate the HTML for a Bootstrap Carousel container. `carouselItems` is an indexed list
@@ -664,9 +668,9 @@ carouselItem i route model =
     in
         div
             [ class <| carouselItemClasses route model
-            , onWithOptions "transitionend"
-                { stopPropagation = True, preventDefault = True }
-                (Json.succeed <| RouterTransitionEnd (getNextRoute model))
+            , onWithOptions "transitionend" noBubble <|
+                Json.succeed <|
+                    RouterTransitionEnd (getNextRoute model)
             ]
             [ div [ class "row" ]
                 [ div [ class "col-lg-12" ] content ]

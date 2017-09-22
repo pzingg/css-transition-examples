@@ -1,9 +1,9 @@
 ##  The <code>transition:</code> property
 
+<img alt="A CSS transition example" src="resources/TransitionsPrinciple.png" style="height: 150px; border: none;">
+
 <pre><code class="css">transition: &lt;property&gt; &lt;duration&gt; &lt;timing-function&gt; &lt;delay&gt;;
 </code></pre>
-
-<img alt="A CSS transition example" src="resources/TransitionsPrinciple.png" style="height: 150px; border: none;">
 
 <pre class="fragment"><code class="css">.box {
     width: 100px;

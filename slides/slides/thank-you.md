@@ -9,4 +9,6 @@ Keep growing the Elm community!
 <li class="fragment">...to @debois, @sporto, @rtfeldman, @rundis, and others whose work is embedded throughout these examples
 </ul>
 
+Code and links to some great animation packages is at [github.com/pzingg/elm-conf-2017](https://github.com/pzingg/elm-conf-2017)
+
 Find me, @pzingg, on Twitter, GitHub, elmlang.slack.com, and here at the conference

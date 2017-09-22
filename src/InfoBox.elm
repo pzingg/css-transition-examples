@@ -216,9 +216,8 @@ view { domId, tagName, htext, content } state =
                 [ text htext
                 , i
                     [ class "glyphicon glyphicon-question-sign help-icon"
-                    , onWithOptions "click"
-                        { stopPropagation = False, preventDefault = True }
-                        (iconClickHandler domId)
+                    , onWithOptions "click" noDefault <|
+                        iconClickHandler domId
                     ]
                     []
                 ]
@@ -226,14 +225,24 @@ view { domId, tagName, htext, content } state =
                 [ id domId
                 , class class_
                 , style style_
-                , onWithOptions "transitionend"
-                    { stopPropagation = False, preventDefault = True }
-                    (Json.succeed <| TransitionEnd domId)
+                , onWithOptions "transitionend" noDefault <|
+                    Json.succeed <|
+                        TransitionEnd domId
                 ]
                 [ div [ class "well content" ]
                     [ content ]
                 ]
             ]
+
+
+noDefault : Html.Events.Options
+noDefault =
+    { stopPropagation = False, preventDefault = True }
+
+
+noBubble : Html.Events.Options
+noBubble =
+    { stopPropagation = True, preventDefault = True }
 
 
 classAndStyle : Properties -> ( String, List ( String, String ) )
@@ -256,7 +265,10 @@ classAndStyle { visibility, height } =
 iconClickHandler : String -> Decoder Msg
 iconClickHandler domId =
     wellHeightDecoder
-        |> Json.andThen (\height -> Json.succeed <| IconClicked domId height)
+        |> Json.andThen
+            (\height ->
+                Json.succeed <| IconClicked domId height
+            )
 
 
 {-| Decode the height of the content element, which is the first
