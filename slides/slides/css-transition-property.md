@@ -1,11 +1,11 @@
-##  The <code>transition:</code> property
+##  The CSS <code>transition:</code> property
 
 <img alt="A CSS transition example" src="resources/TransitionsPrinciple.png" style="height: 150px; border: none;">
 
 <pre><code class="css">transition: &lt;property&gt; &lt;duration&gt; &lt;timing-function&gt; &lt;delay&gt;;
 </code></pre>
 
-<pre class="fragment"><code class="css">.box {
+<pre><code class="css">.box {
     width: 100px;
     height: 100px;
     background-color: #0000FF;
@@ -52,3 +52,6 @@ specification from the CSS Values spec, like this (See https://drafts.csswg.org/
 
 Image credits:
 * https://developer.mozilla.org/files/4529/TransitionsPrinciple.png
+
+Norman:
+Maybe add a slide with all the properties and timing-functions.

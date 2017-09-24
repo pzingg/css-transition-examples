@@ -3,9 +3,9 @@
 Three little animations:
 
 <ul>
-<li class="fragment">An "info box" widget
-<li class="fragment">An "alert" widget
-<li class="fragment">Sliding page transition
+<li class="fragment">An "info box" widget - <code>transition: height</code>
+<li class="fragment">An "alert" widget - <code>transition: height</code>
+<li class="fragment">Page transition carousel - <code>transition: transform</code>
 </ul>
 
 <a class="fragment" href="../../demo/">Let's go!</a>
@@ -30,5 +30,5 @@ we rely on a small JavaScript port to dispatch a custom DOM event to open the al
 * Can be dismissed with function call, timeout, page change, or user click
 
 The page transition example:
-* Uses Bootstrap carousel CSS styles that involve CSS transitions on the transform propertyva
+* Uses Bootstrap carousel CSS styles that involve CSS transitions on the transform property
 * Applying DOM classes to carousel items set the initial and target transform values

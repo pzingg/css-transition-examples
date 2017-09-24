@@ -7,15 +7,16 @@
     },
     "a-little-about-me.md",
     "a-little-about-protolife.md",
-    "protolife-architecture.md",
     "agenda.md",
     "css-transition-property.md",
-    "css-transition-cycle-in-elm.md",
+    "css-transition-timing-functions.md",
+    "css-transition-step-functions.md",
+    "animatable-css-properties.md",
     "demo-time.md",
-    "alert-recipe.md",
     {
         "filename": "alert-html-1.md",
         "attr": {
+            "id": "post-demo",
             "data-transition": "slide-in fade-out"
         }
     },
@@ -28,14 +29,32 @@
     {
         "filename": "alert-html-3.md",
         "attr": {
+            "data-transition": "fade-in fade-out"
+        }
+    },
+    {
+        "filename": "alert-html-4.md",
+        "attr": {
             "data-transition": "fade-in slide-out"
         }
     },
-    "alert-state.md",
     "alert-css.md",
+    "alert-state.md",
     "alert-custom-dom-event.md",
-    "update-view-timing.md",
+    {
+        "filename": "update-view-timing-1.md",
+        "attr": {
+            "data-transition": "slide-in fade-out"
+        }
+    },
+    {
+        "filename": "update-view-timing-2.md",
+        "attr": {
+            "data-transition": "fade-in slide-out"
+        }
+    },
     "request-animation-frame.md",
+    "alert-view-helper.md",
     "alert-height-decoders.md",
     {
         "filename": "resize-handler-1.md",
@@ -51,7 +70,5 @@
     },
     "alert-update-function.md",
     "alert-view-function.md",
-    "initial-render-subscription.md",
-    "process-sleep-task.md",
     "thank-you.md"
 ]

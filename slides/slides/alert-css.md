@@ -1,4 +1,6 @@
-## Styling the alert in CSS and Elm
+## Transition values in CSS and Elm
+
+We create the initial height value in CSS:
 
 <pre><code class="css" data-trim data-noescape>.alert-wrapper, .alert-details {
     overflow: hidden;
@@ -7,7 +9,7 @@
 }
 </code></pre>
 
-<div class="fragment">Change <code>height</code> value to start transition.
+<div class="fragment">And then change <code>height</code> value in Elm to start transition.
 
 <pre><code class="elm" data-trim data-noescape>div [ id "alert-info"
     , class "alert-wrapper row"
@@ -16,8 +18,6 @@
     [ ... ]
 </code></pre>
 </div>
-
-<div class="fragment">Or, change class names with predefined values in CSS</div>
 
 note:
 * Here is the associated CSS style for the two wrapper elements that are contained in the alert's

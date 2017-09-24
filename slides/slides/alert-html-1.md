@@ -6,6 +6,7 @@
         [ button [ ... ] [ span [ ... ] [ text "×" ] ]
         , text "Summary content goes here."
         , button [ ... ] [ text "details" ]
+
         , div [ class "alert-details", id "alert-info-details", ... ]
 
             [ div [ class "content" ]

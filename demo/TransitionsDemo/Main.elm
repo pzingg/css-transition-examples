@@ -555,9 +555,6 @@ infoBoxConfig route =
     , content =
         div []
             [ p [] [ text "For works published or registered before 1978, the maximum copyright duration is 95 years from the date of publication, if copyright was renewed during the 28th year following publication. Copyright renewal has been automatic since the Copyright Renewal Act of 1992." ]
-            , p [] [ text "For works created before 1978, but not published or registered before 1978, the standard §302 copyright duration also applies. Prior to 1978, works had to be published or registered to receive copyright protection. Upon the effective date of the 1976 Copyright Act (which was January 1, 1978) this requirement was removed and these unpublished, unregistered works received protection. However, Congress intended to provide an incentive for these authors to publish their unpublished works. To provide that incentive, these works, if published before 2003, would not have their protection expire before 2048." ]
-            , p [] [ text "All copyrightable works published in the United States before 1923 are in the public domain; works created before 1978 but not published until recently may be protected until 2047. For works that received their copyright before 1978, a renewal had to be filed in the work's 28th year with the Copyright Office for its term of protection to be extended. The need for renewal was eliminated by the Copyright Renewal Act of 1992, but works that had already entered the public domain by non-renewal did not regain copyright protection. Therefore, works published before 1964 that were not renewed are in the public domain." ]
-            , p [] [ text "Before 1972, sound recordings were not subject to federal copyright, but copying was nonetheless regulated under various state torts and statutes, some of which had no duration limit. The Sound Recording Amendment of 1971 extended federal copyright to recordings fixed on or after February 15, 1972, and declared that recordings fixed before that date would remain subject to state or common law copyright. Subsequent amendments have extended this latter provision until 2067. As a result, older sound recordings are not subject to the expiration rules that apply to contemporary visual works. Although these may enter the public domain as a result of government authorship or formal grant by the owner, the practical effect has been to render public domain audio virtually nonexistent." ]
             , p [] [ text "In May 2016, Judge Percy Anderson ruled in a lawsuit between ABS Entertainment and CBS Radio that \"remastered\" versions of pre-1972 recordings can receive a federal copyright as a distinct work due to the amount of creative effort expressed in the process." ]
             , p []
                 [ text "Source: "
@@ -624,7 +621,7 @@ navbar model =
                         [ text "About" ]
                     ]
                 , li [ attribute "role" "presentation" ]
-                    [ a [ href "../slides/dist/#/9" ]
+                    [ a [ href "../slides/dist/#/post-demo" ]
                         [ text "Back to Slides" ]
                     ]
                 ]

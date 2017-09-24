@@ -10,12 +10,15 @@
 <img src="resources/cyclejs_logo.svg" alt="Cycle.js" style="margin-right: 20px; border: none; height: 120px;"/>
 
 note:
-* Like many other members of Elm Slack channel, I was formerly a back-end programmer in Ruby on Rails.
-* Although programming was not my day job, I got interested in front-end programming when I heard about
-the Flux architecture, and then implemented a Spotify-like system for retail stores using the DeLorean.js
-and Ractive.js libraries
-* Became convinced of the importance of immutability after taking Martin Odersky's course on Scala
-* Elm appeared on my radar just about the time I was asked to consult on a startup project
+* I've been a programmer off and on since 1968, most in backend projects, but for the past twelve
+months I have been an Elm programmer.
+* I became a big fan of immutability and functional programming, when I read what Facebook did with
+the Flux architecture and after I took Martin Odersky's online course on Scala.
+* I had the opportunity to get back into front-end programming and developed a Spotify-like
+system for retail stores using the DeLorean.js and Ractive.js libraries.
+* I put Cycle.js on this slide because I think that's also a very interesting project that
+also includes some of the sound fundamentals you find in Elm, such as a time traveling debugger,
+but I don't think it has the strict type system or friendly compiler messages.
 * **Big disclaimer**: I find CSS very counterintuitive compared to Elm!
 
 Image credits:

@@ -1,6 +1,6 @@
-##  Decoding element heights
+##  Decoding the `offsetHeight`<br>of each content element
 
-<pre class="fragment"><code class="elm" data-trim data-noescape>summaryHeightDecoder : Json.Decode.Decoder Float
+<pre><code class="elm" data-trim data-noescape>summaryHeightDecoder : Json.Decode.Decoder Float
 summaryHeightDecoder =
     Json.Decode.at
         [ "target"
@@ -31,5 +31,6 @@ down to the summary content element (its first child), and then obtain the `offs
 * An alternative to using `Json.Decode.at` is to use Søren Debois's elm-dom package which does the same thing
 in a pipeline-flavored way.
 
-References:
+Resources:
+* [Elm and the DOM](https://medium.com/@debois/elm-the-dom-8c9883190d20)
 * [DOM traversal for Elm event-handlers](https://github.com/debois/elm-dom)

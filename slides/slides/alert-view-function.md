@@ -1,19 +1,19 @@
-##  The `Alert.view` function
+## Using the updated properties<br>in the `Alert.view` function
 
 <pre><code class="elm" data-trim data-noescape>view : Config -> State -> Html Msg
 view ({ domId, dismissal } as config) state =
     div
-        [ id domId
-        , class alertWrapperClass
+        [ id domId, class alertWrapperClass
 
-        -- summaryStyles returns a List, like [ ( "height", "82px" ) ]
-        , style <| summaryStyles <| getProperties domId state</mark>
+        <mark>-- summaryStyles returns a List, like [ ( "height", "82px" ) ]</mark>
+        <mark>, style <| summaryStyles <| getProperties domId state</mark>
 
-        -- handlers for the alertSizes and transitioned events
-        , on "alertSizes"
-             <| resizeHandler domId dismissal
-        , on "transitionend"
-             <| Json.Decode.succeed <| TransitionEnd domId domId
+        <mark>-- handlers for the alertSizes and transitioned events</mark>
+        <mark>, on "alertSizes"</mark>
+             <mark><| resizeHandler domId dismissal</mark>
+
+        <mark>, on "transitionend"</mark>
+             <mark><| Json.Decode.succeed <| TransitionEnd domId domId</mark>
         ]
         [ viewContent config state ]
 

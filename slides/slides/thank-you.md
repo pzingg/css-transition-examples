@@ -1,14 +1,12 @@
-##  Thank you
+##  Thank you...
 
-Keep growing the Elm community!
-
-<div class="fragment">Special thanks...</div>
 <ul>
+<li class="fragment">...to Daniel Packard of ProtoLife for original widget designs
 <li class="fragment">...to @BrianHicks for this great conference and feedback
-<li class="fragment">...to all the citizens of the Elm Slack community for answers and ideas
-<li class="fragment">...to @debois, @sporto, @rtfeldman, @rundis, and others whose work is embedded throughout these examples
+<li class="fragment">...to the Elm Slack community for answers and ideas
+<li class="fragment">...to package developers @debois, @sporto, @rtfeldman, @rundis, and others whose contributions and insights are embedded throughout these examples
 </ul>
 
-Code and links to some great animation packages is at [github.com/pzingg/elm-conf-2017](https://github.com/pzingg/elm-conf-2017)
+<p class="fragment">Slide deck, code and more animation resources at<br>[github.com/pzingg/elm-conf-2017](https://github.com/pzingg/elm-conf-2017)</p>
 
-Find me, @pzingg, on Twitter, GitHub, elmlang.slack.com, and here at the conference
+Find me, @pzingg, on [Twitter](https://twitter.com/pzingg), [GitHub](https://github.com/pzingg),<br>elmlang.slack.com, and here at the conference

@@ -1,10 +1,10 @@
-##  Sending the `Resized` message
+## Sending height values<br>in a `Resized` message
 
 <pre><code class="elm" data-trim data-noescape>resizeHandler : String -> Dismissal -> Json.Decode.Decoder Msg
 resizeHandler domId dismissal =
     <mark>Json.Decode.map2 (,) summaryHeightDecoder detailsHeightDecoder</mark>
         <mark>|> Json.Decode.andThen</mark>
-        
+
             (\( summaryHeight, detailsHeight ) ->
                 Json.Decode.succeed
                     <| Resized domId dismissal summaryHeight detailsHeight

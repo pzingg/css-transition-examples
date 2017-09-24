@@ -1,12 +1,13 @@
 ## Alert widget HTML structure
 
-<pre><code class="elm" data-trim data-noescape>div [ class "alert-wrapper row", id "alert-info", ... ]
+<pre><code class="elm" data-trim data-noescape><mark>div [ class "alert-wrapper row", id "alert-info", ... ]</mark>
 
-    <mark>[ div [ class "content alert-info alert-dismissable ...", ... ]</mark>
-        <mark>[ button [ ... ] [ span [ ... ] [ text "×" ] ]</mark>
-        <mark>, text "Summary content goes here."</mark>
-        <mark>, button [ ... ] [ text "details" ]</mark>
-        <mark>, div [ class "alert-details", id "alert-info-details", ... ]</mark>
+    [ div [ class "content alert-info alert-dismissable ...", ... ]
+        [ button [ ... ] [ span [ ... ] [ text "×" ] ]
+        , text "Summary content goes here."
+        , button [ ... ] [ text "details" ]
+
+        , <mark>div [ class "alert-details", id "alert-info-details", ... ]</mark>
 
             [ div [ class "content" ]
                 [ div [] [ label [] [ text "details:" ] ]
@@ -18,5 +19,5 @@
 </code></pre>
 
 note:
-* You can see that there are two divs with a "content" class, and "wrapper" divs around them.
-* There is a summary-level content area...
+* Here is a simplified view of the DOM tree structure for our alert, as emitted in our Elm view function.
+* Bootstrap provides a lot of the basic CSS styles for the content areas.

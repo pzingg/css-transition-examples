@@ -2,17 +2,18 @@
 
 <pre><code class="elm" data-trim data-noescape>div [ class "alert-wrapper row", id "alert-info", ... ]
 
-    [ div [ class "content alert-info alert-dismissable ...", ... ]
-        [ button [ ... ] [ span [ ... ] [ text "×" ] ]
-        , text "Summary content goes here."
-        , button [ ... ] [ text "details" ]
+    <mark>[ div [ class "content alert-info alert-dismissable ...", ... ]</mark>
+        <mark>[ button [ ... ] [ span [ ... ] [ text "×" ] ]</mark>
+        <mark>, text "Summary content goes here."</mark>
+        <mark>, button [ ... ] [ text "details" ]</mark>
+
         , div [ class "alert-details", id "alert-info-details", ... ]
 
-            <mark>[ div [ class "content" ]</mark>
-                <mark>[ div [] [ label [] [ text "details:" ] ]</mark>
-                <mark>, text "Expanded details content goes here."</mark>
-                <mark>]</mark>
-            <mark>]</mark>
+            [ div [ class "content" ]
+                [ div [] [ label [] [ text "details:" ] ]
+                , text "Expanded details content goes here."
+                ]
+            ]
         ]
     ]
 </code></pre>
