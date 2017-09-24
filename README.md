@@ -16,7 +16,7 @@ least one animation frame cycle.
 
 ## Demo Application
 
-See the README.md file in the demo/ directory for an application that shows the
+See the [README.md file in the demo/ directory](demo/README.md) for an application that shows the
 client code for these modules, as well as a router transition UI that also uses
 CSS transitions.
 
@@ -40,6 +40,8 @@ cd slides
 grunt dist
 cd ..
 ```
+
+More information on the slide deck is in the  [README.md file in the slides/ directory](slides/README.md).
 
 Then hyperlinks from the slides to the demo application and back will work if you run a static
 web server in the project directory:
