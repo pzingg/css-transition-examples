@@ -1,11 +1,11 @@
-##  Elm `view` helper
+## Using the updated model<br>in the `Alert.view` function
 
 <pre class="fragment"><code class="elm" data-trim data-noescape>summaryStyles : Properties -> List ( String, String )
 summaryStyles { visibility, summaryHt, detailsHt } =
     case visibility of
-        Summary ->
-            [ ( "height"
-              , toString (summaryHt + 10) ++ "px" ) ]
+        <mark>Summary -></mark>
+            <mark>[ ( "height"</mark>
+              <mark>, toString (summaryHt + 10) ++ "px" ) ]</mark>
 
         Details ->
             [ ( "height"
@@ -20,8 +20,9 @@ summaryStyles { visibility, summaryHt, detailsHt } =
 </code></pre>
 
 note:
-* Now that we have the heights we need, we can use a few helper functions to set the initial and target values for our
-animations.
+* Now that we have the heights we need, we can use a helper function to set the target values
+to kick off the transition.
+* We will generate a list of properties for the `style` Attribute with this function.
 * Depending on the visibility state, we'll set the height value for the outermost wrapper as either zero,
-the height of just the summary content (with padding), or the combined height of the summary and details contents.
-* Here's an example.
+the height of just the summary content (with padding), or the combined height of the summary
+and details contents.

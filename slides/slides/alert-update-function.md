@@ -1,4 +1,4 @@
-##  Handling the `Resized` message<br>in the `Alert.update` function
+##  Updating the model<br>in the `Alert.update` function
 
 <pre><code class="elm" data-trim data-noescape>resized : String -> Float -> Float -> State -> ( State, Properties )
 resized domId sHeight dHeight state =

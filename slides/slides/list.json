@@ -54,7 +54,6 @@
         }
     },
     "request-animation-frame.md",
-    "alert-view-helper.md",
     "alert-height-decoders.md",
     {
         "filename": "resize-handler-1.md",
@@ -68,7 +67,8 @@
             "data-transition": "fade-in slide-out"
         }
     },
-    "alert-update-function.md",
     "alert-view-function.md",
+    "alert-update-function.md",
+    "alert-view-helper.md",
     "thank-you.md"
 ]
