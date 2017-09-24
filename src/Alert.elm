@@ -468,6 +468,9 @@ in order to allow the initial state to be rendered on the VDOM.
 port openAlertNextFrame : String -> Cmd msg
 
 
+port openAlertImmediate : String -> Cmd msg
+
+
 {-| JavaScript port that uses CSSOM smooth scrolling behavior.
 -}
 port scrollToTop : () -> Cmd msg

@@ -529,6 +529,9 @@ after the initial state has been rendered.
 port openAlertImmediate : String -> Cmd msg
 
 
+port openAlertNextFrame : String -> Cmd msg
+
+
 {-| JavaScript port that uses CSSOM smooth scrolling behavior.
 -}
 port scrollToTop : () -> Cmd msg
