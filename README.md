@@ -25,6 +25,7 @@ To build the app:
 ```bash
 cd demo
 elm-make --output=TransitionsDemo/elm.js TransitionsDemo/Main.elm
+cd ..
 ```
 
 Then open the demo/index.html file in a browser.
