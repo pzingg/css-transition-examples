@@ -54,6 +54,7 @@
         }
     },
     "request-animation-frame.md",
+    "opening-an-alert.md",
     "alert-height-decoders.md",
     {
         "filename": "resize-handler-1.md",

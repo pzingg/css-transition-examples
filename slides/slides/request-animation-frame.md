@@ -24,8 +24,9 @@ that dispatches the "alertSizes" event will actually be found in the document.
 * There are other ways to deal with these timing issues on the Elm side,
 but since we already have to resort to JavaScript for the custom DOM event anyway,
 `requestAnimationFrame` is a straightforward technique here.
-* If you want to see two other techniques (involving Elm subscriptions and delayed commands)
-check out the sample code I have posted on GitHub.
+* There are at least two solutions to this timing problem that you can use on the Elm side
+(one that involves subscriptions from the Elm `AnimationFrame` module, and another that uses
+tasks to send messages in the future). For details, see the sample code I have posted on GitHub.
 
 Resources:
 * [StackOverflow: Coordinating Rendering with Port Interaction](https://stackoverflow.com/questions/38952724/how-to-coordinate-rendering-with-port-interactions-elm-0-17)
