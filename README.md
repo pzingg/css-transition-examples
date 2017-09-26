@@ -48,9 +48,21 @@ Then hyperlinks from the slides to the demo application and back will work if yo
 web server in the project directory:
 
 ```bash
-python -m SimpleHTTPServer 8080
+python -m SimpleHTTPServer 8000
 ```
 
-And go to the first slide at http://localhost:8080/slides/dist/
+And go to the first slide at http://localhost:8000/slides/dist/
 
-And the demo application will be at http://localhost:8080/demo/
+And the demo application will be at http://localhost:8000/demo/
+
+
+## Other Animation Elm Packages
+
+These are all great resources if you want to explore fundamentals of animation in Elm:
+
+* http://package.elm-lang.org/packages/elm-lang/animation-frame/latest
+* http://package.elm-lang.org/packages/mgold/elm-animation/latest
+* http://package.elm-lang.org/packages/rundis/elm-bootstrap/latest
+* http://package.elm-lang.org/packages/debois/elm-mdl/latest (especially the Material.Ripple module)
+* http://package.elm-lang.org/packages/mdgiffith/elm-style-animation/latest
+* http://package.elm-lang.org/packages/mdgiffith/style-elements/latest (CSS Transitions are supported in the Style.Transition module)
