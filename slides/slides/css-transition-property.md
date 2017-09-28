@@ -22,9 +22,15 @@ note:
 * Why use CSS transition for animations?
 * No animation math calcs, no Cmd or Sub required in your Elm program, all you need is a set of initial values and
 a set of final, target values.
-* The timing-function kicks in and interpolates between the initial computed values and the
-changed computed values as soon as a "style change event" is rendered in the browser. This
-style change event happens, in this example, when your Elm program changes the "width", "height"
+* Assuming you have not specified a transition delay, the transition will kick in and begin interpolating
+between the initial values and the changed computed values as soon as a "style change event"
+is detected by the browser.
+* The spec says, "Various things can cause the computed values of properties on an element to change.
+These include insertion and removal of elements from the document tree (which both changes whether
+those elements have computed values and can change the styles of other elements through selector
+matching), changes to the document tree that cause changes to which selectors match elements,
+changes to style sheets or style attributes, and other things."
+* This style change event happens, in this example, when your Elm program changes the "width", "height"
 and/or background-color on an element with the "animated-box" class.
 
 * Here's how it works: Just use your Elm view function to set the initial values of properties you want to animate, then set the target values
