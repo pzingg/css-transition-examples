@@ -1,4 +1,4 @@
-## And attaching the `resizeHandler` <br>in the `Alert.view` function
+## Attaching event handlers <br>in the `Alert.view` function
 
 <pre><code class="elm" data-trim data-noescape>view : Config -> State -> Html Msg
 view ({ domId } as config) state =
