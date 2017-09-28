@@ -1,12 +1,12 @@
 ## And attaching the `resizeHandler` <br>in the `Alert.view` function
 
 <pre><code class="elm" data-trim data-noescape>view : Config -> State -> Html Msg
-view ({ domId, dismissal } as config) state =
+view ({ domId } as config) state =
     div
         [ id domId, class "alert-wrapper", style [ ... ]
 
         , on "alertSizes"</mark>
-             <mark><| resizeHandler domId dismissal</mark>
+             <mark><| resizeHandler domId</mark>
 
         , on "transitionend"</mark>
              <mark><| Json.Decode.succeed <| TransitionEnd domId domId</mark>

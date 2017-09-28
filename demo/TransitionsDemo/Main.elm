@@ -162,9 +162,6 @@ init flags location =
 
         quotes =
             Quotes.init <| Debug.log "randSeed" flags.randSeed
-
-        initialPage =
-            Quotes.get quotes
     in
         ( { alerts = Alert.init
           , alertConfigIndex = 0
@@ -173,7 +170,7 @@ init flags location =
           , activeRouteIndex = 0
           , nextRouteIndex = Nothing
           , routerTransition = NotStarted
-          , pages = Array.fromList [ initialPage, Quotes.errorQuote ]
+          , pages = Array.fromList [ Quotes.defaultQuote, Quotes.get quotes ]
           , quotes = quotes
           }
         , Cmd.none
@@ -510,7 +507,7 @@ will overwrite the previous one when `openAlert` is called.
 -}
 alertConfig : Int -> Alert.Config
 alertConfig i =
-    case i % 4 of
+    case i % 3 of
         1 ->
             { domId = "my-alert"
             , severity = Error
@@ -524,14 +521,6 @@ alertConfig i =
             , severity = Success
             , dismissal = DismissAfter (5 * Time.second)
             , summary = "A button was clicked again."
-            , details = Just "And you expanded the details content."
-            }
-
-        3 ->
-            { domId = "my-alert"
-            , severity = Success
-            , dismissal = DismissAfter (5 * Time.second)
-            , summary = "Changed the summary text."
             , details = Just "And you expanded the details content."
             }
 

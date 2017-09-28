@@ -32,5 +32,19 @@
 </table>
 
 note:
-    Put your speaker notes here.
-    You can see them pressing 's'.
+* The full list of "animatable" (or preferred terminology "interpolation") properties is in the CSS Transitions spec,
+Section 9. (See https://drafts.csswg.org/css-transitions/#animatable-properties)
+* Basically any CSS or SVG property that is one of these types or a list of these types, can be interpolated:
+    * integer
+    * number
+    * length
+    * rectangle
+    * percentage
+    * font-weight
+    * visibility
+    * color
+
+* Higher-level values such as "transform", which can be thought of as a list of numerical values can also be interpolated.
+* More cool stuff. A transition property value can be calculated from percentages and lengths, using the "calc()"
+specification from the CSS Values spec, like this (See https://drafts.csswg.org/css-values-4/#funcdef-calc):
+    calc(100%/3 - 2*1em - 2*1px)

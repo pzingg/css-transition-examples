@@ -1,6 +1,6 @@
 ## Elm's update - view loop<br>and DOM rendering
 
-<img alt="Elm pattern" src="resources/elm-pattern_with_clock.png" style="height: 450px; border: none;">
+<img alt="Elm pattern" src="resources/elm-pattern_timing.png" style="height: 450px; border: none;">
 
 note:
 * But this rendering (you can explore the code at elm-lang/virtual-dom if you're curious) is

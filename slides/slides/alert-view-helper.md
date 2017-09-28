@@ -3,6 +3,7 @@
 <pre class="fragment"><code class="elm" data-trim data-noescape>summaryStyles : Properties -> List ( String, String )
 summaryStyles { visibility, summaryHt, detailsHt } =
     case visibility of
+        -- These states add 10px or 20px to account for element padding
         <mark>Summary -></mark>
             <mark>[ ( "height"</mark>
               <mark>, toString (summaryHt + 10) ++ "px" ) ]</mark>
@@ -11,12 +12,11 @@ summaryStyles { visibility, summaryHt, detailsHt } =
             [ ( "height"
               , toString (summaryHt + detailsHt + 20) ++ "px" ) ]
 
+        -- This state sets the computed value to zero to close the alert
         SummaryClosing ->
             [ ( "height", "0px" ) ]
 
         ...
-        _ ->
-            []
 </code></pre>
 
 note:

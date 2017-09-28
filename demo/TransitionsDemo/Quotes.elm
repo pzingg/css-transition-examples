@@ -53,8 +53,8 @@ maxQuoteIndex =
 
 defaultQuote : Quote
 defaultQuote =
-    { quoteText = "Genius is one percent inspiration and ninety-nine percent perspiration."
-    , quoteAuthor = "Thomas Edison"
+    { quoteText = "If we allow that human life can be governed by reason, the possibility of life is annihilated."
+    , quoteAuthor = "Leo Tolstoy"
     }
 
 
@@ -69,6 +69,9 @@ quoteArray : Array Quote
 quoteArray =
     Array.fromList
         [ defaultQuote
+        , { quoteText = "Genius is one percent inspiration and ninety-nine percent perspiration."
+          , quoteAuthor = "Thomas Edison"
+          }
         , { quoteText = "You can observe a lot just by watching."
           , quoteAuthor = "Yogi Berra"
           }

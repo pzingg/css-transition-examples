@@ -4,9 +4,8 @@
          -o-transition:      -o-transform 1.5s ease-in-out;
             transition:         transform 1.5s ease-in-out;
 
-    -webkit-backface-visibility: visible;
-            backface-visibility: visible;
-    -webkit-perspective: none;
-            perspective: none;
+    -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+    -webkit-perspective: 1000px;
+            perspective: 1000px;
   }
-}

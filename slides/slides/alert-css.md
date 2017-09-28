@@ -4,8 +4,8 @@ We create the initial height value in CSS:
 
 <pre><code class="css" data-trim data-noescape>.alert-wrapper, .alert-details {
     overflow: hidden;
-    <mark>transition: height 1000ms ease-in-out;</mark>
     <mark>height: 0px;</mark>
+    <mark>transition: height 1000ms ease-in-out;</mark>
 }
 </code></pre>
 

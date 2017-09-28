@@ -56,7 +56,7 @@ And go to the first slide at http://localhost:8000/slides/dist/
 And the demo application will be at http://localhost:8000/demo/
 
 
-## Other Animation Elm Packages
+## Other Animation Resources
 
 These are all great resources if you want to explore fundamentals of animation in Elm:
 
@@ -66,3 +66,9 @@ These are all great resources if you want to explore fundamentals of animation i
 * http://package.elm-lang.org/packages/debois/elm-mdl/latest (especially the Material.Ripple module)
 * http://package.elm-lang.org/packages/mdgiffith/elm-style-animation/latest
 * http://package.elm-lang.org/packages/mdgiffith/style-elements/latest (CSS Transitions are supported in the Style.Transition module)
+
+And if you're interested in the "page transitions" example, here are some proposals from
+Chrome browser developers and the Angular community:
+
+* [Navigation Transitions project (JavaScript)](https://github.com/jakearchibald/navigation-transitions)
+* [Router Transitions in Angular 4.3](https://medium.com/google-developer-experts/angular-supercharge-your-router-transitions-using-new-animation-features-v4-3-3eb341ede6c8)

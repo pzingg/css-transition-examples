@@ -1,11 +1,10 @@
 ##  The CSS <code>transition:</code> property
 
-<img alt="A CSS transition example" src="resources/TransitionsPrinciple.png" style="height: 150px; border: none;">
+<img alt="A CSS transition example" src="resources/css_transition_with_timing_function.png" style="height: 150px; border: none;">
 
-<pre><code class="css">transition: &lt;property&gt; &lt;duration&gt; &lt;timing-function&gt; &lt;delay&gt;;
-</code></pre>
+<pre><code class="css" data-trim data-noescape>transition: &lt;property&gt; &lt;duration&gt; &lt;timing-function&gt; &lt;delay&gt;;
 
-<pre><code class="css">.box {
+.animated-box {
     width: 100px;
     height: 100px;
     background-color: #0000FF;
@@ -15,36 +14,18 @@
 }
 </code></pre>
 
+<pre class="fragment"><code class="text" data-trim data-noescape>
+transitionrun -> transitionstart -> transitionend / transitioncancel
+</code></pre>
+
 note:
 * Why use CSS transition for animations?
-* You use the CSS transition property to create animations between an initial state of one or more properties and a final state
-* No animation math calcs, no Cmd or Sub required in your Elm program, all you need is an initial value or set of values and
-a target value or values.
-* The transition property is composed of four sub-properties:
-
-    * transition-property - height, width, top, opacity, visibility, color, transform, z-index, etc.
-    * transition-duration - specify in seconds or milliseconds
-    * transition-timing-function - linear, ease, ease-in, ease-out, ease-in-out,
-    cubic-bezier(...), step-start, step-end, steps(...), frames(...)  
-    * transition-delay - specify in seconds or milliseconds
-
-* The full list of "animatable" (or preferred terminology "interpolation") properties is in the CSS Transitions spec,
-Section 9. (See https://drafts.csswg.org/css-transitions/#animatable-properties)
-* Basically any CSS or SVG property that is one of these types or a list of these types, can be interpolated:
-    * integer
-    * number
-    * length
-    * rectangle
-    * percentage
-    * font-weight
-    * visibility
-    * color
-
-* Higher-level values such as "transform", which can be thought of as a list of numerical values can also be interpolated.
-* More cool stuff. A transition property value can be calculated from percentages and lengths, using the "calc()"
-specification from the CSS Values spec, like this (See https://drafts.csswg.org/css-values-4/#funcdef-calc):
-    calc(100%/3 - 2*1em - 2*1px)
-
+* No animation math calcs, no Cmd or Sub required in your Elm program, all you need is a set of initial values and
+a set of final, target values.
+* The timing-function kicks in and interpolates between the initial computed values and the
+changed computed values as soon as a "style change event" is rendered in the browser. This
+style change event happens, in this example, when your Elm program changes the "width", "height"
+and/or background-color on an element with the "animated-box" class.
 
 * Here's how it works: Just use your Elm view function to set the initial values of properties you want to animate, then set the target values
 * The timing function then interpolates from initial values to target values
@@ -53,5 +34,5 @@ specification from the CSS Values spec, like this (See https://drafts.csswg.org/
 Image credits:
 * https://developer.mozilla.org/files/4529/TransitionsPrinciple.png
 
-Norman:
-Maybe add a slide with all the properties and timing-functions.
+Resources:
+* [CSS Transitions Working Draft](https://drafts.csswg.org/css-transitions/)
