@@ -1,5 +1,14 @@
 # CSS Transitions in Elm
 
+This is the repository containing the slide deck sources (with speaker notes) and sample
+code for a talk I gave at ElmConf US in St. Louis in September 2017.
+
+The [video for the talk](https://youtu.be/Zje8MN9whF0) has been posted! Thanks to \@BrianHicks
+and \@lukewestby for organizing this wonderful get-together, helping me hone the talk,
+and doing all the hard work that continued after the conference to get the talks online.
+
+You can see all of the talks (as of October 5, 6 have been posted so far) on
+the [elm-conf US 2017 YouTube playlist](https://www.youtube.com/playlist?list=PLglJM3BYAMPFTT61A0Axo_8n0s9n9CixA).
 
 ## Alert and InfoBox Widgets
 
